@@ -1,16 +1,16 @@
 # Modeling and Simulation of Social Systems Fall 2018 – Research Plan (Template)
 (text between brackets to be removed)
 
-> * Group Name: (be creative!)
-> * Group participants names: (alphabetically sorted by last name)
-> * Project Title: (can be changed later)
-> * Programming language: (Python or MATLAB)
+> * Group Name: Smoked and Confused
+> * Group participants names: Konstantin Baune, Georg Engin-Deniz, Max Glantschnig, Roman Wixinger
+> * Project Title: Dynamics of Smoking
+> * Programming language: Python
 
 ## General Introduction
 
-(States your motivation clearly: why is it important / interesting to solve this problem?)
-(Add real-world examples, if any)
-(Put the problem into a historical context, from what does it originate? Are there already some proposed solutions?)
+In the Framingham Heart Study more than 12,000 people's health statuses where collected for about three decades (1970s to 2000s). One highly interesting result of this study was the smoking behavior of this network of people and how these people impact each other's smoking habits. For example it showed how one's friends', family's and colleagues' smoking habits have impact on an individual.
+In our project we want to use the resulting data to see how smoking beahvior spreads in a random society and how habits develop over time.
+
 
 ## The Model
 
@@ -19,8 +19,9 @@
 
 ## Fundamental Questions
 
-(At the end of the project you want to find the answer to these questions)
-(Formulate a few, clear questions. Articulate them in sub-questions, from the more general to the more specific. )
+How do the dynamics in a society develope over time in our model regarding smoking?
+What are fix points of our model, i.e. will there be groups of smokers or will the whole society be (non-)smoking?
+Do our results reflect the reality, for example the smokers data from Switzerland or the results of the Framingham Heart Study?
 
 
 ## Expected Results
