@@ -6,6 +6,9 @@
 > * Project Title: Dynamics of Smoking
 > * Programming language: Python
 
+Hallo, dies ist ein Test!
+
+
 ## General Introduction
 
 In the Framingham Heart Study more than 12,000 people's health statuses where collected for about three decades (1970s to 2000s). One highly interesting result of this study was the smoking behavior of this network of people and how these people impact each other's smoking habits. For example it showed how one's friends', family's and colleagues' smoking habits have impact on an individual.
