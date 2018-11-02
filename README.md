@@ -1,12 +1,9 @@
-# Modeling and Simulation of Social Systems Fall 2018 – Research Plan (Template)
-(text between brackets to be removed)
+# Modeling and Simulation of Social Systems Fall 2018 – Research Plan
 
 > * Group Name: Smoked and Confused
 > * Group participants names: Konstantin Baune, Georg Engin-Deniz, Max Glantschnig, Roman Wixinger
 > * Project Title: Dynamics of Smoking
 > * Programming language: Python
-
-Hallo, dies ist ein Test!
 
 
 ## General Introduction
