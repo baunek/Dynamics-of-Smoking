@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 20 17:35:14 2018
+Created Nov 2018
+Modelling and Simulating Social Systems
 
-@author: konstantinbaune
+Group Name: Smoked and confused
+@authors: Baune, Engin-Deniz, Glantschnig, Wixinger
+
+Topic:
+Simulation of the smoking habits in a society,
+taking results from the Framingham Heart Studies
+and taking Switzerland's data for the simulation
 """
 
 from abc import ABC, abstractmethod
@@ -19,27 +26,28 @@ from networkx.drawing.nx_agraph import graphviz_layout
 class GenericAgent(ABC):
     #Made this an abstract method
     @abstractmethod
-    def __init__(self,gid,atype):
+    def __init__(self,gid,atype,sex,age):
         self.plotSpacewidth=3
         
-        #Posible state 0-non smoking, 1-smoking, 2-stopped smoking
+        # States: -1 (Smoker), 1 (Non-Smoker)
         self.state = atype
+        # next_state to save the state for the next timestep in each iteration
         self.next_state=0
         
-        #Id in the simulation
+        # Id in the simulation
         self.gid=gid
         
+        # Introducing continuous states for each agent
         if self.state == 1:
             self.state_con = 0.5
         elif self.state == -1:
             self.state_con = -0.5
-        #elif self.state == 2:
-        #    self.state_con = 0.5
-        #Age:
-        #self.age = 0
+        
+        # Age:
+        self._age = age
         
         #Agent type
-        self._atype=atype
+        self._sex=sex
         
         #Probability of starting to smoke per interaction
         self._beta=0
@@ -71,7 +79,7 @@ class GenericAgent(ABC):
         #Assumed Kermack-McKendrick SIR model
     
         next_state=self.state
-        impact_smoke = 0.3
+        impact_smoke = 0.5
         impact_non = 0.36
         #For every neighbour it interacts with
         for val in perception:
@@ -104,13 +112,14 @@ class GenericAgent(ABC):
     def update(self):
         #Updating step
         self.state=self.next_state
-        #self.age += 1
+        #self._age += 1
 
             
     def info(self):
-        print("Agent ",self.gid,", of type ",self._atype,", state ",self.state, ", con-state", self.state_con," at position ",self.position)
+        print("Agent ",self.gid,", of age ",self._age,", of sex ",self._sex,", state ",self.state, ", con-state", self.state_con," at position ",self.position)
 
-#Specizalized agent type A (0)        
+"""
+# Agents without sex or age     
 class Agent(GenericAgent):
     def __init__(self,gid,atype):
         #atype = int(np.round(np.random.rand()))
@@ -118,30 +127,82 @@ class Agent(GenericAgent):
         self._beta=0.01
         self._gamma=0.01
 """
-#Specizalized agent type B (1)
-class AgentB(GenericAgent):
-    def __init__(self,gid):
-        super().__init__(gid,1)
+
+#Agents for males and females with age
+class Male(GenericAgent):
+    def __init__(self,gid,atype,sex,age):
+        super().__init__(gid,atype,sex,age)
         self._beta=0.05
         self._gamma=0.05
-"""        
-        
+
+class Female(GenericAgent):
+    def __init__(self,gid,atype,sex,age):
+        super().__init__(gid,atype,sex,age)
+        self._beta=0.05
+        self._gamma=0.05
+   
+
+
 #This function creates a population of numAgents with percAgents % of Agents type A and the rest type B
 def InitializeAgentPolulation(numAgents):
+    # smoking in Switzerland:
+    # Women: 24.2 %
+    # Men: 32.4 %
+    percw = 0.242
+    percm = 0.324
+    perc = [percm,percw] # not used
+    
+    # Age distribution in Switzerland:
+    #  0-14 years: 15.16% (not to be considered in this model, as assumed to be non-smokers)
+    # 15-24 years: 10.88%
+    # 25-54 years: 43.21%
+    # 55-64 years: 12.6%
+    # 65 years and over: 18.15% (Assuming people's age to be < 100)
+    
     AgentList=[]
-    a =  np.arange(numAgents)
-    #a mischen
-    percsmokers=0.55
-    threasholdA=numAgents*percsmokers
-    for i in a:
-        if i >= threasholdA:
+    a = np.arange(numAgents)
+    np.random.shuffle(a)
+    
+    #percsmokers = 0.55 (not used at the moment)
+    
+    for x,i in enumerate(a):
+        # determining age
+        random_age = np.random.rand()
+        while random_age <= 0.1516:
+            random_age = np.random.rand()
+        if random_age <= 0.2604 and random_age > 0.1516:
+            age = int(np.round((24.-15.) * np.random.rand() + 15.))
+        if random_age <= 0.6925 and random_age > 0.2604:
+            age = int(np.round((54.-25.) * np.random.rand() + 25.))
+        if random_age <= 0.8185 and random_age > 0.6925:
+            age = int(np.round((64.-55.) * np.random.rand() + 55.))
+        if random_age > 0.8185:
+            age = int(np.round((100.-65.) * np.random.rand() + 65.))
+        
+        # creating agents with age, sex and smoking habit
+        # threasholds for smoking habits
+        threasholdm = numAgents*percm
+        threasholdw = numAgents*percw
+        
+        # Assuming Men-Women ratio to be 50.50
+        # setting sex
+        if x < int(np.round(numAgents/2 + 0.1)):
+            threashold = threasholdm
+            sex = Male
+            sex_ = "Male"
+        else:
+            threashold = threasholdw
+            sex = Female
+            sex_ = "Female"
+        
+        # creating agents
+        if i >= threashold:
             atype = 1
-            AgentList.append(Agent(i,atype))
+            AgentList.append(sex(x,atype,sex_,age))
         else:
             atype = -1
-            AgentList.append(Agent(i,atype))
-    """for i in range(10):
-        AgentList[i].state = 1"""
+            AgentList.append(sex(x,atype,sex_,age))
+            
     return AgentList
 
 
@@ -168,9 +229,9 @@ def PlotGraph(G,color_map=None,ax=None):
         
     #Plot on a specific figure or not    
     if ax is None:
-        nx.draw(G,pos,node_color = color_map, with_labels=True, font_weight='bold', node_size = 500)
+        nx.draw(G,pos,node_color = color_map, with_labels=True, font_weight='bold', node_size = 300)
     else:
-        nx.draw(G,pos,node_color = color_map, ax=ax, with_labels=True, font_weight='bold', node_size = 500)
+        nx.draw(G,pos,node_color = color_map, ax=ax, with_labels=True, font_weight='bold', node_size = 300)
         
         
 #Generates the interaction maps between the agents
@@ -223,14 +284,19 @@ def step(AgentList,Environment):
         
         
 def simulate(AgentList,Environment,numSteps):
-    #Store the initial state
+    # Store the initial state
     simResults=[[node[1]['data'].state for node in Environment.nodes(data=True)]]
     numbers = []
+    numbers_m = []
+    number_m = 0
     number = 0
     for agent in AgentList:
         if agent.state == 1:
             number += 1
+            if agent._sex == "Male":
+                number_m += 1
     numbers.append([number,numAgents - number])
+    numbers_m.append([number_m, int(numAgents/2) - number_m])
     #Perform numSteps number of steps
     for i in range(numSteps):
         #print("Step ",i," of numSteps")
@@ -239,42 +305,60 @@ def simulate(AgentList,Environment,numSteps):
         states = [node[1]['data'].state for node in Environment.nodes(data=True)]
         simResults.append(states)
         number = 0
+        number_m = 0
         for agent in AgentList:
             if agent.state == 1:
                 number += 1
+                if agent._sex == "Male":
+                    number_m += 1
         numbers.append([number,numAgents - number])     
-        
-    ExportGraph(Environment)
-    return simResults, numbers
+        numbers_m.append([number_m, int(numAgents/2) - number_m])
+    numbers = np.array(numbers)
+    numbers_m = np.array(numbers_m)
+    numbers_w = numbers - numbers_m
+    #ExportGraph(Environment)
+    return simResults, numbers, numbers_m, numbers_w
 
 
-def ExportGraph(Environment):
+def ExportGraph(Environment, akey):
     env = Environment.copy()
     agent_dict = nx.get_node_attributes(env, 'data')
     for key in agent_dict:
         agent_dict[key] = agent_dict[key].state
     nx.set_node_attributes(env, agent_dict, 'data')
-    nx.write_gexf(env,"text.gexf")
+    nx.write_gexf(env, akey+".gexf")
 
+"""
+****************** Main ***********************
+"""
 
+# Initial conditions
 numAgents = 100
 AgentList = InitializeAgentPolulation(numAgents)
-#PrintAgentsInfo()
+PrintAgentsInfo() # Prints the infos of the agents in the beginning
 friend_prob = 0.04
 Environment = GenerateFriendshipGraph(AgentList,friend_prob)
-PlotGraph(Environment)
+PlotGraph(Environment) # Plots the initial graph
+
 #print(nx.eigenvector_centrality(Environment, max_iter=100, tol=1e-06, nstart=None, weight='weight'))
-print(nx.average_clustering(Environment))
-#PrintAgentsInfo()
+print("Average Clustering: ",nx.average_clustering(Environment))
+#PrintAgentsInfo() # Prints the infos of the agents in the final state
 
 
-TimeSteps = 100
 
-results, numbers = simulate(AgentList,Environment,TimeSteps)
+TimeSteps = 50
+
+ExportGraph(Environment, "start")  # Saves the initial graph
+
+# Simulation
+results, numbers, numbers_m, numbers_w = simulate(AgentList,Environment,TimeSteps)
 
 
-ExportGraph(Environment)
+ExportGraph(Environment, "end") # Saves the final graph
 
+"""
+**********************************************
+"""
 
 import matplotlib.pyplot as plt
 import matplotlib.animation
@@ -294,13 +378,35 @@ def animate(j):
 ani = matplotlib.animation.FuncAnimation(fig, animate, frames=len(results))
 ani.save('mymovie.html')
 
-numbers = np.array(numbers)
 
+# Total
 plt.figure()
 plt.plot(np.arange(TimeSteps+1),numbers[:,0],label='non-smokers')
 
 plt.plot(np.arange(TimeSteps+1),numbers[:,1],label='smokers')
 plt.legend()
+plt.title('Total')
+plt.xlabel('Number timesteps')
+plt.ylabel('Number of agents')
+plt.show()
+
+# Men
+plt.figure()
+plt.plot(np.arange(TimeSteps+1),numbers_m[:,0],label='non-smokers')
+
+plt.plot(np.arange(TimeSteps+1),numbers_m[:,1],label='smokers')
+plt.legend()
+plt.title('Men')
+plt.xlabel('Number timesteps')
+plt.ylabel('Number of agents')
+plt.show()
+
+# Women
+plt.plot(np.arange(TimeSteps+1),numbers_w[:,0],label='non-smokers')
+
+plt.plot(np.arange(TimeSteps+1),numbers_w[:,1],label='smokers')
+plt.legend()
+plt.title('Women')
 plt.xlabel('Number timesteps')
 plt.ylabel('Number of agents')
 plt.show()
