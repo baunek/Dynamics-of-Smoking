@@ -20,6 +20,7 @@ from random import shuffle
 import matplotlib.pyplot as plt
 import numpy as np
 from networkx.drawing.nx_agraph import graphviz_layout
+import scipy.io as spio
 #matplotlib.use("Agg")
 
 #Parent Abstract class
@@ -245,8 +246,20 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
     
     #Create links between agents using erdos renyi method
     G_erdos = nx.erdos_renyi_graph(len(G.nodes),friend_prob)
-    G.add_edges_from(G_erdos.edges())
+    #G.add_edges_from(G_erdos.edges())
+    #Wird für das experimentelle Feature auskommentiert
+    
+    """ Experimentelles Feature """
+    mat = spio.loadmat('edgesdata.mat', squeeze_me=True)
 
+    E1 = mat['E1']
+    edges_list = []
+    for i in range(E1.shape[0]):
+        edges_list.append(tuple(E1[i,:]))
+    
+    G.add_edges_from(edges_list)
+    """ Ende des experimentellen Features """
+    
     #Update the position of the agents for a nicer visualization (only relevant for visualization in the current code)
     pos = nx.random_layout(G, dim=2)
     for i in range(len(AgentList)):
@@ -333,7 +346,7 @@ def ExportGraph(Environment, akey):
 """
 
 # Initial conditions
-numAgents = 100
+numAgents = 150
 AgentList = InitializeAgentPolulation(numAgents)
 PrintAgentsInfo() # Prints the infos of the agents in the beginning
 friend_prob = 0.04
