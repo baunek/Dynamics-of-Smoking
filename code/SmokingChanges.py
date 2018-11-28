@@ -59,6 +59,8 @@ class GenericAgent(ABC):
         #Position of the agent in the map (can be ignored, the position is changed when the graph is created)
         self.position=[self.gid%self.plotSpacewidth,self.gid//self.plotSpacewidth]
         
+        self.changes = 0
+        
         super().__init__()
         
         
@@ -77,19 +79,20 @@ class GenericAgent(ABC):
         return perception
     
     def act(self,perception):
-        #Assumed Kermack-McKendrick SIR model
-    
+        
         next_state=self.state
         impact_smoke = 0.5
         impact_non = 0.36
         #For every neighbour it interacts with
+        num_neigh = len(perception)
+        
         for val in perception:
             #if the neighbour smokes, that person will smoke with prob self.beta
             sample=np.random.uniform(0,1)
             if val > 0:
-                self.state_con += impact_non * sample
+                self.state_con = min((self.state_con + impact_non * sample)/num_neigh, 1)
             elif val <= 0:
-                self.state_con -= impact_smoke * sample
+                self.state_con = max((self.state_con - impact_smoke * sample)/num_neigh, -1)
                 
         
         if self.state_con > 0:
@@ -100,6 +103,9 @@ class GenericAgent(ABC):
             self.next_state = -1
             if self.state == 1:
                 self.state_con -= 0.3
+                
+        if self.state != self.next_state:
+            self.changes += 1
         
         #if the agent itself is smoking, it will stop smoking with probability self.gamma
         #if self.state == 1:
@@ -117,7 +123,8 @@ class GenericAgent(ABC):
 
             
     def info(self):
-        print("Agent ",self.gid,", of age ",self._age,", of sex ",self._sex,", state ",self.state, ", con-state", self.state_con," at position ",self.position)
+        #print("Agent ",self.gid,", of age ",self._age,", of sex ",self._sex,", state ",self.state, ", con-state", self.state_con," at position ",self.position)
+        print(self.state_con, self.changes)
 
 """
 # Agents without sex or age     
@@ -246,10 +253,9 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
     
     #Create links between agents using erdos renyi method
     G_erdos = nx.erdos_renyi_graph(len(G.nodes),friend_prob)
-    #G.add_edges_from(G_erdos.edges())
-    #Wird für das experimentelle Feature auskommentiert
+    G.add_edges_from(G_erdos.edges())
     
-    """ Experimentelles Feature """
+    """
     mat = spio.loadmat('edgesdata.mat', squeeze_me=True)
 
     E1 = mat['E1']
@@ -258,7 +264,7 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
         edges_list.append(tuple(E1[i,:]))
     
     G.add_edges_from(edges_list)
-    """ Ende des experimentellen Features """
+    """
     
     #Update the position of the agents for a nicer visualization (only relevant for visualization in the current code)
     pos = nx.random_layout(G, dim=2)
@@ -349,7 +355,7 @@ def ExportGraph(Environment, akey):
 numAgents = 150
 AgentList = InitializeAgentPolulation(numAgents)
 PrintAgentsInfo() # Prints the infos of the agents in the beginning
-friend_prob = 0.04
+friend_prob = 0.05
 Environment = GenerateFriendshipGraph(AgentList,friend_prob)
 PlotGraph(Environment) # Plots the initial graph
 
@@ -423,3 +429,5 @@ plt.title('Women')
 plt.xlabel('Number timesteps')
 plt.ylabel('Number of agents')
 plt.show()
+
+PrintAgentsInfo()
