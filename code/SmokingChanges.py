@@ -78,13 +78,14 @@ class GenericAgent(ABC):
             perception.append(environment.nodes[neigh]['data'].state_con)
         return perception
     
-    def act(self,perception):
+    def act(self,perception, impact_smoke, impact_non):
         
         next_state=self.state
-        impact_smoke = 0.5
-        impact_non = 0.36
+        #impact_smoke = 0.5
+        #impact_non = 0.36
         #For every neighbour it interacts with
         num_neigh = len(perception)
+    
         
         for val in perception:
             #if the neighbour smokes, that person will smoke with prob self.beta
@@ -255,7 +256,7 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
     G_erdos = nx.erdos_renyi_graph(len(G.nodes),friend_prob)
     G.add_edges_from(G_erdos.edges())
     
-    """
+    
     mat = spio.loadmat('edgesdata.mat', squeeze_me=True)
 
     E1 = mat['E1']
@@ -264,7 +265,7 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
         edges_list.append(tuple(E1[i,:]))
     
     G.add_edges_from(edges_list)
-    """
+    
     
     #Update the position of the agents for a nicer visualization (only relevant for visualization in the current code)
     pos = nx.random_layout(G, dim=2)
@@ -287,7 +288,7 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
 
 
 
-def step(AgentList,Environment):
+def step(AgentList,Environment, impact_smoke, impact_non):
     #Agents need to be shuffled to eliminate the unrealistic advantage of having a lower gid
     shuffle(AgentList)
     
@@ -295,15 +296,16 @@ def step(AgentList,Environment):
     for agent in AgentList:
         #print("Executing agent ",agent.gid)
         perception = agent.perceive(Environment)
-        agent.act(perception)
+        agent.act(perception, impact_smoke, impact_non)
     #Update all agents
     for agent in AgentList:
         agent.update()
         #agent.info()
         
         
-def simulate(AgentList,Environment,numSteps):
+def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.36):
     # Store the initial state
+    np.random.seed(0)
     simResults=[[node[1]['data'].state for node in Environment.nodes(data=True)]]
     numbers = []
     numbers_m = []
@@ -319,7 +321,7 @@ def simulate(AgentList,Environment,numSteps):
     #Perform numSteps number of steps
     for i in range(numSteps):
         #print("Step ",i," of numSteps")
-        step(AgentList,Environment)
+        step(AgentList,Environment, impact_smoke, impact_non)
         #Store results
         states = [node[1]['data'].state for node in Environment.nodes(data=True)]
         simResults.append(states)
@@ -348,7 +350,7 @@ def ExportGraph(Environment, akey):
     nx.write_gexf(env, akey+".gexf")
 
 """
-****************** Main ***********************
+****************** Initialize population ***********************
 """
 
 # Initial conditions
@@ -364,6 +366,10 @@ print("Average Clustering: ",nx.average_clustering(Environment))
 #PrintAgentsInfo() # Prints the infos of the agents in the final state
 
 
+"""
+****************** Simulation ***********************
+"""
+
 
 TimeSteps = 50
 
@@ -375,9 +381,11 @@ results, numbers, numbers_m, numbers_w = simulate(AgentList,Environment,TimeStep
 
 ExportGraph(Environment, "end") # Saves the final graph
 
+
 """
-**********************************************
+******************* Plot Simulation ***************************
 """
+
 
 import matplotlib.pyplot as plt
 import matplotlib.animation
@@ -430,4 +438,172 @@ plt.xlabel('Number timesteps')
 plt.ylabel('Number of agents')
 plt.show()
 
-PrintAgentsInfo()
+#PrintAgentsInfo()
+
+
+
+
+"""
+****************** Experiment 1 ***********************
+"""
+import time
+
+numAgents = 150
+friend_prob = 0.05
+TimeSteps = 50
+
+
+#Anzahl Auswertungspunkte in eine Richtung
+Gridlength = 12
+
+# Simulation von (Gridlength)^2 Werten von impact_smoke x impact_non
+impact_smoke_range = np.linspace(0.0, 3.5, Gridlength)
+impact_non_range = np.linspace(0.0, 0.3, Gridlength)
+
+#Quotient Raucher-Agents für alle Tubel i,j
+exp_result = exp_result_m = exp_result_w = np.zeros((Gridlength,Gridlength))
+
+
+t0 = time.perf_counter()
+
+#Original population
+AgentList_0 = InitializeAgentPolulation(numAgents)
+Environment_0 = GenerateFriendshipGraph(AgentList,friend_prob)
+
+
+for i in range(Gridlength):
+    for j in range(Gridlength):
+        # Initialize Poplulation
+        AgentList = AgentList_0.copy()
+        Environment = Environment_0.copy()
+        #Simulate 
+        a = impact_smoke_range[i] ; b = impact_non_range[j]
+        _, numbers_exp1, numbers_m_exp1, numbers_w_exp1 = simulate(AgentList,Environment,TimeSteps, a, b)
+        #Quotient Raucher / Agents im Schlusszustand
+        exp_result[i,j] = numbers_exp1[-1,1]/numAgents
+        exp_result_w[i,j] = numbers_w_exp1[-1,1]/numbers_w_exp1[:,1].size
+        exp_result_m[i,j] = numbers_m_exp1[-1,1]/numbers_m_exp1[:,1].size
+
+t1 = time.perf_counter()
+print('Da Experiment hat',t1 - t0, 'Sekunden gedauert.')
+
+
+"""
+****************** Plot Experiment 1 - Analysis of the impact parameters ***********************
+"""
+
+#Full population
+plt.figure(figsize = (12, 8))
+levels = np.linspace(0,1, 14)
+contour = plt.contour(impact_non_range, impact_smoke_range, exp_result, levels, colors='k')
+plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=12)
+contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result, levels)
+plt.colorbar(contour_filled)
+plt.title('Final percentage of smokers in population', fontsize = 'xx-large')
+plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
+plt.ylabel('Impact smoker []', fontsize = 'xx-large')
+plt.savefig('Population-Dynamics.PNG')
+plt.show()
+
+#Woman 
+plt.figure(figsize = (12, 8))
+levels = np.linspace(0,1, 14)
+contour = plt.contour(impact_non_range, impact_smoke_range, exp_result_w, levels, colors='k')
+plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=12)
+contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result, levels)
+plt.colorbar(contour_filled)
+plt.title('Final percentage of woman smoking', fontsize = 'xx-large')
+plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
+plt.ylabel('Impact smoker []', fontsize = 'xx-large')
+plt.savefig('Woman-Population-Dynamics.PNG')
+plt.show()
+
+
+#Men
+plt.figure(figsize = (12, 8))
+levels = np.linspace(0,1, 14)
+contour = plt.contour(impact_non_range, impact_smoke_range, exp_result_m, levels, colors='k')
+plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=12)
+contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result, levels)
+plt.colorbar(contour_filled)
+plt.title('Final percentage of men smoking', fontsize = 'xx-large')
+plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
+plt.ylabel('Impact smoker []', fontsize = 'xx-large')
+plt.savefig('Men-Population-Dynamics.PNG')
+plt.show()
+
+
+
+
+
+
+"""
+****************** Experiment 2 - Analysis of time propagation ***********************
+"""
+
+numAgents = 150
+TimeSteps = 50
+impact_non = 0.3
+friend_prop = 0.05
+
+
+#Anzahl Auswertungspunkte in eine Richtung
+Gridlength = 12
+
+# Simulation von (Gridlength)^2 Werten von impact_smoke x friendprop
+impact_smoke_range = np.linspace(0.0, 0.2, Gridlength)
+Timestep_range = np.linspace(6, 10+(Gridlength - 1)*10, Gridlength, dtype = int)
+
+#Quotient Raucher-Agents für alle Tubel i,j
+exp_result = exp_result_m = exp_result_w = np.zeros((Gridlength,Gridlength))
+
+#Zeitmessung des Experiments
+t0 = time.perf_counter()
+
+#Original population
+AgentList_0 = InitializeAgentPolulation(numAgents)
+Environment_0 = GenerateFriendshipGraph(AgentList,friend_prob)
+
+#Simulation of all tubels
+for i in range(Gridlength):
+    for j in range(Gridlength):
+        # Initialize Poplulation
+        AgentList = AgentList_0.copy()
+        Environment = Environment_0.copy()
+        #Simulate 
+        a = impact_smoke_range[i] ; b = Timestep_range[j]
+        _, numbers_exp1, numbers_m_exp1, numbers_w_exp1 = simulate(AgentList,Environment, b, a, impact_non)
+        #Quotient Raucher / Agents im Schlusszustand
+        #Hier sind i, j vertauscht damit beim Plot die Achsen sinnvoll sind. 
+        exp_result[j,i] = numbers_exp1[-1,1]/numAgents
+        exp_result_w[j,i] = numbers_w_exp1[-1,1]/numbers_w_exp1[:,1].size
+        exp_result_m[j,i] = numbers_w_exp1[-1,1]/numbers_m_exp1[:,1].size
+
+t1 = time.perf_counter()
+print('Da Experiment hat',t1 - t0, 'Sekunden gedauert.')
+
+
+
+"""
+****************** Plot Experiment 2 - Analysis of time propagation ***********************
+"""
+
+#Full population
+plt.figure(figsize = (12, 8))
+levels = np.linspace(0,1, 14)
+contour = plt.contour(Timestep_range, impact_smoke_range, exp_result, levels, colors='k')
+plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=12)
+contour_filled = plt.contourf(Timestep_range, impact_smoke_range, exp_result, levels)
+plt.colorbar(contour_filled)
+plt.title('Time propagation against impact of smokers', fontsize = 'xx-large')
+plt.xlabel('Time step []', fontsize = 'xx-large')
+plt.ylabel('Impact smoker', fontsize = 'xx-large')
+plt.savefig('Population-Dynamics.PNG')
+plt.show()
+
+
+
+
+
+
+
