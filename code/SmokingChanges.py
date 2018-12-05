@@ -89,6 +89,7 @@ class GenericAgent(ABC):
         
         for val, weight in zip(perception[0,:], perception[1,:]):
             #if the neighbour smokes, that person will smoke with prob self.beta
+<<<<<<< HEAD
             sample = np.random.normal(1, 0.3)
             #print(impact_non, impact_smoke)
             
@@ -96,6 +97,15 @@ class GenericAgent(ABC):
                 self.state_con = min(self.state_con + weight * impact_non * sample/max(num_neigh, 1), 1)
             elif val <= 0:
                 self.state_con = max(self.state_con - weight * impact_smoke * sample/max(num_neigh, 1), -1)
+=======
+            sample = np.random.normal(1 ,0.3)
+            #print(impact_non, impact_smoke)
+            
+            if val > 0:
+                self.state_con = min(self.state_con + impact_non * sample/num_neigh, 1)
+            elif val <= 0:
+                self.state_con = max(self.state_con - impact_smoke * sample/num_neigh, -1)
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
                 
         
         if self.state_con > 0:
@@ -261,7 +271,10 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
     G_erdos = nx.erdos_renyi_graph(len(G.nodes),friend_prob[0])
     G.add_edges_from(G_erdos.edges(), weight = 1)
     
+<<<<<<< HEAD
     #Enhance realisticness of the graph by adding egdes from BTER model
+=======
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
     numAgents = len(AgentList)
     
     if numAgents == 150:
@@ -359,8 +372,11 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
         if agent._sex == "Male":
             number_of_males += 1
     
+<<<<<<< HEAD
     print(numbers)
     
+=======
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
     return simResults, numbers, numbers_m, numbers_w, number_of_males
 
 
@@ -377,8 +393,13 @@ def analyse_influence(AgentList, Environment, bin_number = 6):
     
     for i, Agent in enumerate(AgentList):
         perception  = Agent.perceive(Environment)
+<<<<<<< HEAD
         numneigh = len(perception[0,:])
         for per in perception[0,:]:
+=======
+        numneigh = len(perception)
+        for per in perception:
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
             if per <= 0: 
                 smoker_neigh += 1
         result[i, 0] = Agent.state
@@ -427,6 +448,157 @@ def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment
             Agentlist1, Environment1 after the simulation
             
     POST:   Function prints the answers to the following questions: 
+<<<<<<< HEAD
+=======
+
+    a ) Agent quits -> What is the probability of someone in his environment to quit too?
+    b ) What is the probability of an arbitrary to quit
+    c ) How much more likely is the smoker with a friend that quit to quit himself? 
+    d ) How much less likely is a relative of an agent to smoke if the agent quits smoking?
+    """
+    
+    numAgents = len(AgentList0)
+    
+    #Status of agents before [i,0] and after [i,1] the simulation: 0 : smoker, 1 : non smoker
+    #Number of neighbours [i, 2], number of neigbhbours smoking before [i,3] and after [i,4]
+    #Number of neighbours that smoked an stop smoked [i, 5]
+    status = np.zeros((numAgents, 6))
+    
+    #We observe the smoking status of the agents before 
+    for i, Agent in enumerate(AgentList0):
+        if Agent.state > 0:
+            status[i, 0] = 1 #Non-smoker
+        else:
+            status[i, 0] = 0 #Smoker
+                 
+    #We observe the smoking status of the agents after
+    for i, Agent in enumerate(AgentList1):
+        if Agent.state > 0:
+           status[i, 1] = 1 #Non-smoker
+        else:
+           status[i, 1] = 0 #Smoker
+    
+        
+    #Find the number of smoker in the environment of agent i before
+    #and the number of neighbours of agent i
+    #Find the number of smoker in environment that quit
+    for i, Agent in enumerate(AgentList0):
+        
+        perception0 = Agent.perceive(Environment0)      #Environment before
+        perception1 = Agent.perceive(Environment1)      #Environment after
+        neigh = 0                                       #Counting variable for number of neighbours
+
+        for j, per in enumerate(perception0):
+            #Count the number of neighbours
+            status[i,2] += 1
+            
+            if per <= 0:
+                #Count the number of neighbours that smoked before
+                status[i,3] += 1
+            
+                #Count the number of neighbours which quit
+                if perception1[j] > 0:
+                    status[i,5] += 1
+        
+        
+      
+    #Find the number of smoker in the environment of agent i after the simulation
+    for i, Agent in enumerate(AgentList1): 
+        perception1  = Agent.perceive(Environment1)
+        for j, per in enumerate(perception1):
+            if per <= 0:
+                #Count the number of neighbours that smoked after
+                status[i,4] += 1
+               
+    
+    #We answer question a)  Agent quits -> What is the probability of someone in his environment to quit too?
+    quitter_quitter = 0        #number of neighbours (of an agent that quit) that smoked and quit o
+    quitter_smoker = 0         #number of smoking neighbours (of and agent that quit) in beginning
+    
+    for i in range(numAgents):
+        #Check of agent i smoked and quit
+        if status[i,0] == 0 and status[i,1] == 1:
+            quitter_smoker += status[i, 3]
+            quitter_quitter += status[i,5]
+    
+           
+    #Probability of smoking neighbour (of someone who quits) to quit
+    quitter_quitting_prob = quitter_quitter / quitter_smoker 
+    print('The probability of smoking neighbour (of someone who quits) to quit is: ',round(quitter_quitting_prob,2))
+    
+    #We answer question b) What is the probability of an arbitrary smoker to quit?
+    total_quitter = 0           #total number of smoker that quit
+    total_smoker = 0            #total number of smoker in the beginning
+    
+    for i in range(numAgents):
+        #Check if agent i smoked in the beginning
+        if status[i,0] == 0:
+            total_smoker += 1
+            #Check if smoking agent quits
+            if status[i,1] == 1:
+                total_quitter += 1
+                
+    
+    #Probability of smoker to quit
+    arbitrary_quitting_prob = total_quitter / total_smoker
+    print('Probability of an arbitrary smoker to quit is',round(arbitrary_quitting_prob,2))
+    
+    
+    #We answer question c) How much more likely is the smoker with a friend that quit to quit himself?
+    more_likely = quitter_quitting_prob / arbitrary_quitting_prob
+    print('How much more likely is the smoker with a friend that quit to quit himself: ',round(more_likely,2))
+          
+      
+    #We answer question d) How much less likely is a relative of an agent to smoke if the agent quits smoking?
+    
+    #We calculate the relative change in the number of smoker in the environment 
+    #of an agent that smoked and quit smoking
+    quitter_smoker_before = 0       #number of smoker in the environment of agent that quits before
+    quitter_smoker_after = 0        #number of smoker in the environment of agent that quits after
+    quitter_neighbours = 0          #number of neighbours in the environment of agent that quits
+    
+    number_of_quitter = 0           #number of neighbours that quit in total
+    quitter_number_of_quitter = 0   #number of neighbours that quit and are neighbour of agent that quit
+    smoker_before  = 0              #number of neighbours that smoke in the beginning
+    
+    for i in range(numAgents):
+        #Count the number of neighbour that quit
+        number_of_quitter += status[i,5] 
+        smoker_before += status[i, 3]
+        
+        if status[i,0] == 0 and status[i,1] == 1:
+            quitter_neighbours += status[i, 2]
+            quitter_smoker_before += status[i, 3]
+            quitter_smoker_after += status[i,4]
+            quitter_number_of_quitter += status[i,5]
+            
+    
+    #Relative change of the number of smoker in the environment of agent that quit
+    quitter_rel_change = (quitter_smoker_after - quitter_smoker_before) / quitter_smoker_before #quitter_neighbours
+    print('The relative change of the number of smoker in the environment of an agent that quit is: ',  round(quitter_rel_change,2))
+    
+    
+    #We calculate the relative change in the number of smoker in the environment of an arbitrary agent
+    smoker_before = 0
+    smoker_after = 0
+    neighbours = 0
+    
+    for i in range(numAgents-100):
+        neighbours += status[i,2]
+        smoker_before += status[i,3]
+        smoker_after += status[i,4]
+    
+    
+    #Relative change of the number of smoker in the environment of arbitrary agent
+    rel_change = (smoker_after - smoker_before)/smoker_before
+    print('The relative change of the number of smoker in the environment of an arbitrary agent is ',  round(rel_change,2))
+    
+    #How much less likely is a relative of an agent to smoke if the agent quits smoking?
+    more_likely2 = quitter_rel_change / rel_change
+    print('A neighbour is ', round(more_likely2, 2),' times more likely to not smoke if the agent quits')
+    
+    
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
 
     a ) Agent quits -> What is the probability of someone in his environment to quit too?
     b ) What is the probability of an arbitrary to quit
@@ -583,6 +755,7 @@ def ExportGraph(Environment, akey):
     nx.set_node_attributes(env, agent_dict, 'data')
     nx.write_gexf(env, akey+".gexf")
     
+<<<<<<< HEAD
 def average_friends(Environment):
     """
     Function examines the calculates and prints information about the number of neighbours.
@@ -608,12 +781,17 @@ def average_friends(Environment):
     print("The average number of friends per node:", average_friends)
     print("The average number of family members per node:", average_family)
         
+=======
+    
+
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
 
 """
 ******************* Simulation ***************************
 """
 
 
+<<<<<<< HEAD
 def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40, impact_smoke = 0.3, impact_non = 0.1, 
                    plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True):
     
@@ -725,6 +903,118 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
         #PrintAgentsInfo()
     
         average_friends(Environment)
+=======
+def run_simulation(numAgents = 150, friend_prob = 0.05, TimeSteps = 30, impact_smoke = 0.3, impact_non = 0.1, 
+                   plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True):
+    
+    """
+    ****************** Initialize population ***********************
+    """
+    
+    # Initial conditions
+    #numAgents = 150
+    AgentList = InitializeAgentPolulation(numAgents)
+    
+    #PrintAgentsInfo() # Prints the infos of the agents in the beginning
+    #friend_prob = 0.05
+    Environment = GenerateFriendshipGraph(AgentList,friend_prob)
+    
+    if(draw):
+        PlotGraph(Environment) # Plots the initial graph
+    
+    #print(nx.eigenvector_centrality(Environment, max_iter=100, tol=1e-06, nstart=None, weight='weight'))
+    print("Average Clustering: ",round(nx.average_clustering(Environment), 3))
+    #PrintAgentsInfo() # Prints the infos of the agents in the final state
+    
+    
+    """
+    ****************** Simulation ***********************
+    """
+    from copy import deepcopy
+    
+    
+    #TimeSteps = 50
+    
+    ExportGraph(Environment, "start")  # Saves the initial graph
+    
+    #Copy for analysis of change
+    AgentList0 = copy.deepcopy(AgentList) 
+    Environment0 = copy.deepcopy(Environment)#.copy()
+    
+    # Simulation
+    results, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non)
+    
+    ExportGraph(Environment, "end") # Saves the final graph
+    
+    analyse_influence(AgentList,Environment, bin_number = 14)
+    
+    analyse_influence_quitting(AgentList0, Environment0, AgentList, Environment)
+    
+    """
+    ******************* Plot Simulation ***************************
+    """
+    
+    import matplotlib.pyplot as plt
+    import matplotlib.animation
+    plt.rcParams["animation.html"] = "jshtml"
+    import numpy as np
+    
+    
+    # Build plot
+    fig, ax = plt.subplots(figsize=(10,7))
+    resultsCopy= deepcopy(results)
+    
+    def animate(j):
+        ax.clear()
+        PlotGraph(Environment,color_map=resultsCopy[j],ax=ax)
+        
+    
+    if(draw):
+        ani = matplotlib.animation.FuncAnimation(fig, animate, frames=len(results))
+        ani.save('mymovie.html')
+    
+    if(plot):
+        # Total
+        plt.figure(figsize = (12,8))
+        plt.plot(np.arange(TimeSteps+1),numbers[:,0],label='non-smokers')
+        
+        
+        plt.plot(np.arange(TimeSteps+1),numbers[:,1],label='smokers')
+        plt.legend()
+        plt.title('Total')
+        plt.xlabel('Number timesteps')
+        plt.ylabel('Number of agents')
+        plt.grid()
+        plt.show()
+        
+        # Men
+        plt.figure(figsize = (12,8))
+        plt.plot(np.arange(TimeSteps+1),numbers_m[:,0],label='non-smokers')
+        
+        plt.plot(np.arange(TimeSteps+1),numbers_m[:,1],label='smokers')
+        plt.legend()
+        plt.title('Men')
+        plt.xlabel('Number timesteps')
+        plt.ylabel('Number of agents')
+        plt.grid()
+        plt.show()
+        
+        # Women
+        plt.figure(figsize = (12,8))
+        plt.plot(np.arange(TimeSteps+1),numbers_w[:,0],label='non-smokers')
+        
+        plt.plot(np.arange(TimeSteps+1),numbers_w[:,1],label='smokers')
+        plt.legend()
+        plt.title('Women')
+        plt.xlabel('Number timesteps')
+        plt.ylabel('Number of agents')
+        plt.grid()
+        plt.show()
+        
+        #PrintAgentsInfo()
+    
+
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
 
 
 """
@@ -732,7 +1022,11 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
 """
 import time
 
+<<<<<<< HEAD
 def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, min_non_impact = 0.01, max_non_impact = 0.5):
+=======
+def run_experiment1(numAgents = 150, friend_prob = 0.05, TimeSteps = 30, Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, min_non_impact = 0.01, max_non_impact = 0.5):
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
 
     #numAgents = 150
     #friend_prob = 0.05
@@ -832,7 +1126,11 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
 ****************** Experiment 2 - Analysis of time propagation ***********************
 """
 
+<<<<<<< HEAD
 def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, impact_non = 0.1, min_TimeStep = 2, Stepsize = 2):
+=======
+def run_experiment2(numAgents = 150, friend_prob = 0.05, Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, impact_non = 0.1, min_TimeStep = 2, Stepsize = 2):
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
 
 
     #numAgents = 150
@@ -904,12 +1202,21 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
 ******************* Main ***************************
 """   
 
+<<<<<<< HEAD
 run_simulation(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
     
 run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
 
 
 run_experiment2(numAgents = 300, friend_prob = [0.01, 0.006], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 8)
+=======
+run_simulation(numAgents = 300, friend_prob = 0.008, TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+    
+run_experiment1(numAgents = 300, friend_prob = 0.01, TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
+
+
+run_experiment2(numAgents = 300, friend_prob = 0.01, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 8)
+>>>>>>> 9e0389eefe7b877f30276e97e0a84620b8c2264f
 
 
 
