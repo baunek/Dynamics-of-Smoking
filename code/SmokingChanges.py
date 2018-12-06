@@ -153,6 +153,66 @@ class Female(GenericAgent):
         self._beta=0.05
         self._gamma=0.05
    
+def InitializeUSAgent(numAgents):
+    #this function was used to test our model against the observed changes during the Framingham Heart study
+    #it sucesfully demonstrates the gradual decrase of smoking from 45% to 22% +_2% of the population over a period of 40years(steps)
+    percw = 0.20
+    percm = 0.25
+    perc = [percm,percw] # not used
+
+    AgentList=[]
+    a = np.arange(numAgents)
+    np.random.shuffle(a)
+
+    # Age distribution 1979 US: https://www.cdc.gov/nchs/data/statab/pop6097.pdf
+    #  0-14 years: 22.9% (not to be considered in this model, as assumed to be non-smokers)
+    # 15-24 years: 18.91%
+    # 25-54 years: 37.41%
+    # 55-64 years: 9.55%
+    # 65 years and over: 11.23% (Assuming people's age to be < 100)
+
+    for x,i in enumerate(a):
+        # determining age
+        random_age = np.random.rand()
+        while random_age <= 0.229:
+            random_age = np.random.rand()
+        if random_age <= 0.4181 and random_age > 0.229:
+            age = int(np.round((24.-15.) * np.random.rand() + 15.))
+        if random_age <= 0.7922 and random_age > 0.4181:
+            age = int(np.round((54.-25.) * np.random.rand() + 25.))
+        if random_age <= 0.8877 and random_age > 0.7922:
+            age = int(np.round((64.-55.) * np.random.rand() + 55.))
+        if random_age > 0.8877:
+            age = int(np.round((100.-65.) * np.random.rand() + 65.))
+
+        # creating agents with age, sex and smoking habit
+        # threasholds for smoking habits
+        threasholdm = numAgents*percm
+        threasholdw = numAgents*percw
+
+        # Assuming Men-Women ratio to be 50.50
+        # setting sex
+        if x < int(np.round(numAgents/2 + 0.1)):
+            threashold = threasholdm
+            sex = Male
+            sex_ = "Male"
+        else:
+            threashold = threasholdw
+            sex = Female
+            sex_ = "Female"
+
+        # creating agents
+        if i >= threashold:
+            atype = 1
+            AgentList.append(sex(i,atype,sex_,age))
+        else:
+            atype = -1
+            AgentList.append(sex(i,atype,sex_,age))
+
+        np.random.shuffle(AgentList)
+
+    return AgentList
+
 
 def InitializeAgentPolulation(numAgents):
     # smoking in Switzerland:
@@ -362,7 +422,8 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
     for agent in AgentList:
         if agent._sex == "Male":
             number_of_males += 1
-    
+           
+    print("Percentage of smokers changed to","%.4f" % round(numbers[1][-1]/3,2))
     return simResults, numbers, numbers_m, numbers_w, number_of_males
 
 
