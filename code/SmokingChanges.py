@@ -9,8 +9,8 @@ Group Name: Smoked and confused
 
 Topic:
 Simulation of the smoking habits in a society,
-taking results from the Framingham Heart Studies
-and taking Switzerland's data for the simulation
+based on results from the Framingham Heart Studies
+and applying them to Switzerland's population
 """
 
 from abc import ABC, abstractmethod
