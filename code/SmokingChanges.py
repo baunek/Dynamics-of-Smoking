@@ -1053,7 +1053,7 @@ def determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 #run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 8)
 
 
-determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 50, impact_smoke = 0.3, impact_non = 0.1) 
+determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 50, impact_smoke = 0.51, impact_non = 0.67) 
 
 
 
