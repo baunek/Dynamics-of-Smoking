@@ -155,9 +155,9 @@ class Female(GenericAgent):
    
 def InitializeUSAgent(numAgents):
     #this function was used to test our model against the observed changes during the Framingham Heart study
-    #it sucesfully demonstrates the gradual decrase of smoking from 45% to 22% +_2% of the population over a period of 40years(steps)
-    percw = 0.20
-    percm = 0.25
+    #it sucesfully demonstrates the gradual decrase of smoking from 45% to 22% +_3% of the population over a period of 40years(steps)
+    percw = 0.40
+    percm = 0.50
     perc = [percm,percw] # not used
 
     AgentList=[]
@@ -1045,7 +1045,7 @@ def determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 ******************* Main ***************************
 """   
 
-#run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.5, impact_non = 0.4, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+#run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.51, impact_non = 0.67, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
     
 #run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
 
