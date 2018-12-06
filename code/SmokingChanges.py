@@ -359,8 +359,6 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
         if agent._sex == "Male":
             number_of_males += 1
     
-    print(numbers)
-    
     return simResults, numbers, numbers_m, numbers_w, number_of_males
 
 
@@ -574,7 +572,10 @@ def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment
     more_likely2 = quitter_rel_change / rel_change
     print('A neighbour is ', round(more_likely2, 2),' times more likely to not smoke if the agent quits')
     
-
+    print("Fehlersuche:")
+    print(smoker_before)
+    print(quitter_smoker_before)
+    
 def ExportGraph(Environment, akey):
     env = Environment.copy()
     agent_dict = nx.get_node_attributes(env, 'data')
@@ -904,12 +905,12 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
 ******************* Main ***************************
 """   
 
-run_simulation(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.5, impact_non = 0.4, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
     
-run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
+#run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
 
 
-run_experiment2(numAgents = 300, friend_prob = [0.01, 0.006], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 8)
+#run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 8)
 
 
 
