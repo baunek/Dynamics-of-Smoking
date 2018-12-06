@@ -162,7 +162,9 @@ def InitializeUSAgent(numAgents):
 
     AgentList=[]
     a = np.arange(numAgents)
+    b = np.arange(numAgents)
     np.random.shuffle(a)
+    np.random.shuffle(b)
 
     # Age distribution 1979 US: https://www.cdc.gov/nchs/data/statab/pop6097.pdf
     #  0-14 years: 22.9% (not to be considered in this model, as assumed to be non-smokers)
@@ -202,7 +204,7 @@ def InitializeUSAgent(numAgents):
             sex_ = "Female"
 
         # creating agents
-        if i >= threashold:
+        if b[i] >= threashold:
             atype = 1
             AgentList.append(sex(i,atype,sex_,age))
         else:
@@ -231,7 +233,10 @@ def InitializeAgentPolulation(numAgents):
 
     AgentList=[]
     a = np.arange(numAgents)
+    b = np.arange(numAgents)
     np.random.shuffle(a)
+    np.random.shuffle(b)
+    
 
     #percsmokers = 0.55 (not used at the moment)
 
@@ -266,14 +271,14 @@ def InitializeAgentPolulation(numAgents):
             sex_ = "Female"
 
         # creating agents
-        if i >= threashold:
+        if b[i] >= threashold: #i >= threashold:
             atype = 1
             AgentList.append(sex(i,atype,sex_,age))
         else:
             atype = -1
             AgentList.append(sex(i,atype,sex_,age))
-
-        np.random.shuffle(AgentList)
+        
+        #np.random.shuffle(AgentList)
 
     return AgentList
 
@@ -564,7 +569,7 @@ def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment
 
 
     #Probability of smoking neighbour (of someone who quits) to quit
-    quitter_quitting_prob = quitter_quitter / quitter_smoker
+    quitter_quitting_prob = quitter_quitter / max(quitter_smoker, 1)
     print('The probability of smoking neighbour (of someone who quits) to quit is: ',round(quitter_quitting_prob,2))
 
     #We answer question b) What is the probability of an arbitrary smoker to quit?
@@ -586,7 +591,7 @@ def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment
 
 
     #We answer question c) How much more likely is the smoker with a friend that quit to quit himself?
-    more_likely = quitter_quitting_prob / arbitrary_quitting_prob
+    more_likely = quitter_quitting_prob / max(arbitrary_quitting_prob,0.001)
     print('How much more likely is the smoker with a friend that quit to quit himself: ',round(more_likely,2))
 
 
@@ -615,7 +620,7 @@ def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment
 
 
     #Relative change of the number of smoker in the environment of agent that quit
-    quitter_rel_change = (quitter_smoker_after - quitter_smoker_before) / quitter_smoker_before #quitter_neighbours
+    quitter_rel_change = (quitter_smoker_after - quitter_smoker_before) / max(quitter_smoker_before,1) #quitter_neighbours
     print('The relative change of the number of smoker in the environment of an agent that quit is: ',  round(quitter_rel_change,2))
 
 
@@ -631,7 +636,7 @@ def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment
 
 
     #Relative change of the number of smoker in the environment of arbitrary agent
-    rel_change = (smoker_after - smoker_before)/smoker_before
+    rel_change = (smoker_after - smoker_before)/ max(smoker_before,1)
     print('The relative change of the number of smoker in the environment of an arbitrary agent is ',  round(rel_change,2))
 
     #How much less likely is a relative of an agent to smoke if the agent quits smoking?
@@ -701,6 +706,7 @@ def Graph_test(AgentList, Environment):
                 non_neigh += 1
                 if per <= 0:
                     non_smoker_neigh += 1   #Neighbour smokes
+        #Smoker
         else:
             for per in perception[0,:]:
                 smoker_neigh += 1
@@ -708,8 +714,8 @@ def Graph_test(AgentList, Environment):
                     smoker_smoker_neigh += 1
 
     #Compute the percentage of smokers in the environment
-    smoker_percentage = round(smoker_smoker_neigh / max(smoker_neigh, 1), 1)
-    non_percentage = round(non_smoker_neigh / max(non_neigh, 1), 1)
+    smoker_percentage = round(smoker_smoker_neigh / max(smoker_neigh, 1), 2)
+    non_percentage = round(non_smoker_neigh / max(non_neigh, 1), 2)
 
     print('Non-smoker have in the beginning in average ', 100 * non_percentage, '% smoking neighbours.')
     print('Smoker have in the beginning in average ', 100 * smoker_percentage, '% smoking neighbours.')
@@ -844,7 +850,14 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
 import time
 
 def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, min_non_impact = 0.01, max_non_impact = 0.5):
-
+    """
+    Experiment shows the final percentage of smokers in the population in dependence 
+    of the impact parameters impact_smoke and impact_non. This parameters stand 
+    for the negative impact of smokers and the positive impact of non-smokers 
+    on their environment. 
+    
+    
+    """
     #numAgents = 150
     #friend_prob = 0.05
     #TimeSteps = 30
@@ -897,28 +910,28 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     plt.figure(figsize = (12, 8))
     levels = np.linspace(0,1, 14)
     contour = plt.contour(impact_non_range, impact_smoke_range, exp_result, levels, colors='k')
-    plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=12)
+    plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result, levels)
     plt.colorbar(contour_filled)
     plt.title('Final percentage of smokers in population', fontsize = 'xx-large')
     plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
     plt.ylabel('Impact smoker []', fontsize = 'xx-large')
     plt.grid()
-    plt.savefig('Population-Dynamics.PNG')
+    plt.savefig('Parameter-Dynamics.PNG')
     plt.show()
 
     #Woman
     plt.figure(figsize = (12, 8))
     levels = np.linspace(0,1, 14)
     contour = plt.contour(impact_non_range, impact_smoke_range, exp_result_w, levels, colors='k')
-    plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=12)
+    plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result_w, levels)
     plt.colorbar(contour_filled)
     plt.title('Final percentage of woman smoking', fontsize = 'xx-large')
     plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
     plt.ylabel('Impact smoker []', fontsize = 'xx-large')
     plt.grid()
-    plt.savefig('Woman-Population-Dynamics.PNG')
+    plt.savefig('Woman-Parameter-Dynamics.PNG')
     plt.show()
 
 
@@ -926,14 +939,14 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     plt.figure(figsize = (12, 8))
     levels = np.linspace(0,1, 14)
     contour = plt.contour(impact_non_range, impact_smoke_range, exp_result_m, levels, colors='k')
-    plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=12)
+    plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result_m, levels)
     plt.colorbar(contour_filled)
     plt.title('Final percentage of men smoking', fontsize = 'xx-large')
     plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
     plt.ylabel('Impact smoker []', fontsize = 'xx-large')
     plt.grid()
-    plt.savefig('Men-Population-Dynamics.PNG')
+    plt.savefig('Men-Parameter-Dynamics.PNG')
     plt.show()
 
 
@@ -997,15 +1010,15 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
 
     #Full population
     plt.figure(figsize = (12, 8))
-    levels = np.linspace(0,1, 14)
+    levels = np.linspace(0.0,1, 21)
     contour = plt.contour(Timestep_range, impact_smoke_range, exp_result, levels, colors='k')
-    plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=12)
+    plt.clabel(contour, colors = 'k', fmt = '%2.2f', fontsize=18)
     contour_filled = plt.contourf(Timestep_range, impact_smoke_range, exp_result, levels)
     plt.colorbar(contour_filled)
     plt.title('Time propagation against impact of smokers', fontsize = 'xx-large')
     plt.xlabel('Time step []', fontsize = 'xx-large')
     plt.ylabel('Impact smoker', fontsize = 'xx-large')
-    plt.savefig('Population-Dynamics.PNG')
+    plt.savefig('Time-Propagation.PNG')
     plt.show()
 
 
@@ -1015,7 +1028,7 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
 ****************** Experiment 3 - Determinism test ***********************
 """
 
-def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 30, impact_smoke = 0.3, impact_non = 0.1):
+def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.3, impact_non = 0.1 , SampleSize = 500, Bins1 = 6, Bins2 = 10):
     """
     Function tests how deterministic the model is and answers the following questions:
 
@@ -1047,10 +1060,12 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 
 
     plt.figure(figsize = (12,8))
-    plt.hist(result1, 8, normed = True)
+    plt.hist(result1, Bins1, normed = True, facecolor='grey')
     plt.title('Histogram for given initial population', fontsize = 24)
     plt.xlabel('Final percentage of smokers', fontsize = 24)
+    plt.savefig('Stability_Histogram1.PNG')
     plt.show()
+    
 
     std_deviation1 = np.std(result1)
 
@@ -1076,9 +1091,10 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 
 
     plt.figure(figsize = (12,8))
-    plt.hist(result2, 8, normed = True)
+    plt.hist(result2, Bins2, normed = True, facecolor='grey')
     plt.title('Histogram for random population', fontsize = 24)
     plt.xlabel('Final percentage of smokers', fontsize = 24)
+    plt.savefig('Stability_Histogram2.PNG')
     plt.show()
 
     std_deviation2 = np.std(result2)
@@ -1093,12 +1109,11 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 ******************* Main ***************************
 """
 
-#run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.51, impact_non = 0.67, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+#Run Simulation 
+run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.42, impact_non = 0.2, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
 
-#run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
+run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
 
+run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 4)
 
-#run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 8)
-
-
-determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 50, impact_smoke = 0.51, impact_non = 0.67)
+Determinism_test(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.51, impact_non = 0.2, SampleSize = 40, Bins1 = 4, Bins2 = 8)
