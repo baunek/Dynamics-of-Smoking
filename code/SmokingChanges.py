@@ -423,7 +423,8 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
         if agent._sex == "Male":
             number_of_males += 1
            
-    print("Percentage of smokers changed to","%.4f" % round(numbers[1][-1]/3,2))
+    #print("Percentage of smokers changed to","%.4f" % round(numbers[1][-1]/3,2))
+    
     return simResults, numbers, numbers_m, numbers_w, number_of_males
 
 
@@ -649,6 +650,7 @@ def ExportGraph(Environment, akey):
     nx.set_node_attributes(env, agent_dict, 'data')
     nx.write_gexf(env, akey+".gexf")
     
+    
 def average_friends(Environment):
     """
     Function examines the calculates and prints information about the number of neighbours.
@@ -673,6 +675,47 @@ def average_friends(Environment):
     print("The average number of neighbours per node is:", average_edges)
     print("The average number of friends per node:", average_friends)
     print("The average number of family members per node:", average_family)
+    
+    
+def Graph_test(AgentList, Environment):
+    """
+    Function examines the inital conditions and answers the following questions:
+    a) Do smokers and non smokers have in average the same percentage of smokers as neighbours? 
+    
+    """
+    
+    smoker_smoker_neigh = 0     #number of smoking neighbours of smokers
+    smoker_neigh = 0            #number of neighbours of smokers
+    smoker_percentage = 0       #percentage of smokers in the environment of an agent that smokes
+    
+    non_smoker_neigh = 0        #number of smoking neighbours of nonsmokers
+    non_neigh = 0               #number of neighbours of nonsmokers
+    non_percentage = 0          #percentage of smokers in the environment of an agent that does not smoke
+    
+    for i, agent in enumerate(AgentList):
+        
+        perception = agent.perceive(Environment)
+        #Non smoker
+        if agent.state > 0:
+            for per in perception[0,:]:
+                non_neigh += 1 
+                if per <= 0:            
+                    non_smoker_neigh += 1   #Neighbour smokes
+        else:
+            for per in perception[0,:]:
+                smoker_neigh += 1
+                if per <= 0:
+                    smoker_smoker_neigh += 1
+    
+    #Compute the percentage of smokers in the environment
+    smoker_percentage = round(smoker_smoker_neigh / max(smoker_neigh, 1), 1) 
+    non_percentage = round(non_smoker_neigh / max(non_neigh, 1), 1)
+    
+    print('Non-smoker have in the beginning in average ', 100 * non_percentage, '% smoking neighbours.')
+    print('Smoker have in the beginning in average ', 100 * smoker_percentage, '% smoking neighbours.')
+    
+    
+
         
 
 """
@@ -695,12 +738,14 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
     #friend_prob = 0.05
     Environment = GenerateFriendshipGraph(AgentList,friend_prob)
     
+    Graph_test(AgentList, Environment)
+    
     if(draw):
         PlotGraph(Environment) # Plots the initial graph
     
     #print(nx.eigenvector_centrality(Environment, max_iter=100, tol=1e-06, nstart=None, weight='weight'))
     print("Average Clustering: ",round(nx.average_clustering(Environment), 3))
-    print()
+    
     #PrintAgentsInfo() # Prints the infos of the agents in the final state
     
     
@@ -970,7 +1015,7 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
 ****************** Experiment 3 - Determinism test ***********************
 """
 
-def determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 30, impact_smoke = 0.3, impact_non = 0.1): 
+def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 30, impact_smoke = 0.3, impact_non = 0.1): 
     """
     Function tests how deterministic the model is and answers the following questions:
         
@@ -1009,7 +1054,7 @@ def determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
     
     std_deviation1 = np.std(result1)
     
-    print('For a given initial population, the standard deviation of the final percentage of smoker is: ',std_deviation1 )
+    print('For a given initial population, the standard deviation of the final percentage of smoker is: ',round(std_deviation1 , 4))
     
     #Answer to question b) For random initial populations, how big is the standard deviation of the resulting final percentage of smokers?
     
@@ -1038,14 +1083,17 @@ def determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
    
     std_deviation2 = np.std(result2)
     
-    print('For random initial populations, the standard deviation of the final percentage of smoker is: ',std_deviation2 )
+    print('For random initial populations, the standard deviation of the final percentage of smoker is: ',round(std_deviation2 , 4))
+    
+  
+    
     
 
 """
 ******************* Main ***************************
 """   
 
-#run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.5, impact_non = 0.4, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+run_simulation(numAgents = 500, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.5, impact_non = 0.4, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
     
 #run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
 
@@ -1053,7 +1101,7 @@ def determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 #run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 8)
 
 
-determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 50, impact_smoke = 0.3, impact_non = 0.1) 
+Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 50, impact_smoke = 0.3, impact_non = 0.1) 
 
 
 
