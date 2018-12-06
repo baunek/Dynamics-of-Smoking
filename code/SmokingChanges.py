@@ -22,6 +22,7 @@ import numpy as np
 from networkx.drawing.nx_agraph import graphviz_layout
 import scipy.io as spio
 import copy
+from copy import deepcopy
 #matplotlib.use("Agg")
 
 #Parent Abstract class
@@ -315,11 +316,14 @@ def step(AgentList,Environment, impact_smoke, impact_non):
         #agent.info()
         
         
-def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.36):
+def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.36, set_seed = True):
     numAgents = len(AgentList)
     
+    #Always use the same random numbers
+    if set_seed:
+        np.random.seed(0)
+    
     # Store the initial state
-    np.random.seed(0)
     simResults=[[node[1]['data'].state for node in Environment.nodes(data=True)]]
     numbers = []
     numbers_m = []
@@ -897,15 +901,90 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
     plt.ylabel('Impact smoker', fontsize = 'xx-large')
     plt.savefig('Population-Dynamics.PNG')
     plt.show()
+    
+    
+    
 
+"""
+****************** Experiment 3 - Determinism test ***********************
+"""
 
+def determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 30, impact_smoke = 0.3, impact_non = 0.1): 
+    """
+    Function tests how deterministic the model is and answers the following questions:
+        
+    a) For a given initial population, how big is the standard deviation of the resulting final percentage of smokers?
+    b) For random initial populations, how big is the standard deviation of the resulting final percentage of smokers?
+    """
+    
+    #Answer to question a) For a given initial population, how big is the standard deviation of the resulting final percentage of smokers?
 
+    #Original population
+    AgentList0 = InitializeAgentPolulation(numAgents)
+    Environment0 = GenerateFriendshipGraph(AgentList0,friend_prob)
+    
+    #Percentage of smokers in population after TimeSteps
+    result1 = np.zeros(SampleSize)
+    result1_w = np.zeros(SampleSize)
+    result1_m = np.zeros(SampleSize)
+    
+    for i in range(SampleSize):
+    
+        AgentList = copy.deepcopy(AgentList0) 
+        Environment = copy.deepcopy(Environment0)
+        #numbers : number of smoker
+        _, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non, set_seed = False)
+        
+        result1[i] = numbers[-1,1] / numAgents
+        result1_w[i] = numbers_w[-1,1] / (numAgents - number_of_males)
+        result1_m[i] = numbers_m[-1,1] / number_of_males
+        
+    
+    plt.figure(figsize = (12,8))
+    plt.hist(result1, 8, normed = True)
+    plt.title('Histogram for given initial population', fontsize = 24)
+    plt.xlabel('Final percentage of smokers', fontsize = 24)
+    plt.show()
+    
+    std_deviation1 = np.std(result1)
+    
+    print('For a given initial population, the standard deviation of the final percentage of smoker is: ',std_deviation1 )
+    
+    #Answer to question b) For random initial populations, how big is the standard deviation of the resulting final percentage of smokers?
+    
+    #Percentage of smokers in population after TimeSteps
+    result2 = np.zeros(SampleSize)
+    result2_w = np.zeros(SampleSize)
+    result2_m = np.zeros(SampleSize)
+    
+    for i in range(SampleSize):
+    
+        AgentList = InitializeAgentPolulation(numAgents)
+        Environment = GenerateFriendshipGraph(AgentList0,friend_prob)
+        #numbers : number of smoker
+        _, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non, set_seed = False)
+        
+        result2[i] = numbers[-1,1] / numAgents
+        result2_w[i] = numbers_w[-1,1] / (numAgents - number_of_males)
+        result2_m[i] = numbers_m[-1,1] / number_of_males
+    
+   
+    plt.figure(figsize = (12,8))
+    plt.hist(result2, 8, normed = True)
+    plt.title('Histogram for random population', fontsize = 24)
+    plt.xlabel('Final percentage of smokers', fontsize = 24)
+    plt.show()
+   
+    std_deviation2 = np.std(result2)
+    
+    print('For random initial populations, the standard deviation of the final percentage of smoker is: ',std_deviation2 )
+    
 
 """
 ******************* Main ***************************
 """   
 
-run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.5, impact_non = 0.4, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+#run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.5, impact_non = 0.4, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
     
 #run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
 
@@ -913,7 +992,7 @@ run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, imp
 #run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 8)
 
 
-
+determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, SampleSize = 50, impact_smoke = 0.3, impact_non = 0.1) 
 
 
 
