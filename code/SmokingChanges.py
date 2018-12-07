@@ -215,6 +215,23 @@ def InitializeUSAgent(numAgents):
 
     return AgentList
 
+#Random numbers for use in all simulations 
+a150 = np.arange(150)
+np.random.shuffle(a150)
+b150 = np.arange(150)
+np.random.shuffle(b150)
+a300 = np.arange(300)
+np.random.shuffle(a300)
+b300 = np.arange(300)
+np.random.shuffle(b300)
+a500 = np.arange(500)
+np.random.shuffle(a500)
+b500 = np.arange(500)
+np.random.shuffle(b500)
+a1000 = np.arange(1000)
+np.random.shuffle(a1000)
+b1000 = np.arange(1000)
+np.random.shuffle(b1000)
 
 
 def InitializeAgentPolulation(numAgents):
@@ -234,15 +251,17 @@ def InitializeAgentPolulation(numAgents):
 
     AgentList=[]
     
-    np.random.seed(0)
-    a = np.arange(numAgents)
-    np.random.shuffle(a)
+    #Choose random numbers that were created for all simulations
+    if numAgents == 150:
+        a = a150 ; b = b150
+    elif numAgents == 300:
+        a = a300 ; b = b300
+    elif numAgents == 500:
+        a = a500 ; b = b300
+    elif numAgents == 1000:
+        a = a1000 ; b = b1000
+        
     
-    np.random.seed(1)
-    b = np.arange(numAgents)
-    np.random.shuffle(b)
-    
-
     #percsmokers = 0.55 (not used at the moment)
 
     for x,i in enumerate(a):
@@ -1124,7 +1143,7 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
     print('The mean result is: ', round(np.mean(result2) * 100, 1))
 
 
- 
+  
  
 
 """
@@ -1138,7 +1157,7 @@ run_simulation(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, imp
 
 #run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.2, impact_non = 0.01, min_TimeStep = 0, Stepsize = 4)
 
-Determinism_test(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, SampleSize = 15, Bins1 = 4, Bins2 = 8)
+Determinism_test(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, SampleSize = 50, Bins1 = 4, Bins2 = 8)
 
 
 
