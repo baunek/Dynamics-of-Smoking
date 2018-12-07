@@ -216,6 +216,7 @@ def InitializeUSAgent(numAgents):
     return AgentList
 
 
+
 def InitializeAgentPolulation(numAgents):
     # smoking in Switzerland:
     # Women: 24.2 %
@@ -232,9 +233,13 @@ def InitializeAgentPolulation(numAgents):
     # 65 years and over: 18.15% (Assuming people's age to be < 100)
 
     AgentList=[]
+    
+    np.random.seed(0)
     a = np.arange(numAgents)
-    b = np.arange(numAgents)
     np.random.shuffle(a)
+    
+    np.random.seed(1)
+    b = np.arange(numAgents)
     np.random.shuffle(b)
     
 
@@ -428,8 +433,7 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
         if agent._sex == "Male":
             number_of_males += 1
 
-    print("Percentage of smokers changed from", round(numbers[1][-1]/3,2) , "to","%.4f" % round(numbers[1][-1]/3,2) )
-
+    print("Percentage of smokers changed from", round(numbers[0][1]/3,2) , "to","%.4f" % round(numbers[-1][1]/3,2) )
     return simResults, numbers, numbers_m, numbers_w, number_of_males
 
 
@@ -1120,7 +1124,7 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
     print('The mean result is: ', round(np.mean(result2) * 100, 1))
 
 
-
+ 
  
 
 """
@@ -1128,9 +1132,9 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 """
 
 #Run Simulation 
-#run_simulation(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+run_simulation(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
 
-run_experiment1(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 4, min_smoke_impact = 0.03, max_smoke_impact = 0.07, min_non_impact = 0.005, max_non_impact = 0.02)
+#run_experiment1(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 4, min_smoke_impact = 0.03, max_smoke_impact = 0.07, min_non_impact = 0.005, max_non_impact = 0.02)
 
 #run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.2, impact_non = 0.01, min_TimeStep = 0, Stepsize = 4)
 
