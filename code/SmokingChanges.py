@@ -428,7 +428,7 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
         if agent._sex == "Male":
             number_of_males += 1
 
-    #print("Percentage of smokers changed to","%.4f" % round(numbers[1][-1]/3,2))
+    print("Percentage of smokers changed from", round(numbers[1][-1]/3,2) , "to","%.4f" % round(numbers[1][-1]/3,2) )
 
     return simResults, numbers, numbers_m, numbers_w, number_of_males
 
@@ -717,8 +717,8 @@ def Graph_test(AgentList, Environment):
     smoker_percentage = round(smoker_smoker_neigh / max(smoker_neigh, 1), 2)
     non_percentage = round(non_smoker_neigh / max(non_neigh, 1), 2)
 
-    print('Non-smoker have in the beginning in average ', 100 * non_percentage, '% smoking neighbours.')
-    print('Smoker have in the beginning in average ', 100 * smoker_percentage, '% smoking neighbours.')
+    print('Non-smokers have ', 100 * non_percentage, '% smoking neighbours on average at the start of the simulation.')
+    print('Smokers have', 100 * smoker_percentage, '% smoking neighbours on average at the start of the simulation.')
 
 
 
