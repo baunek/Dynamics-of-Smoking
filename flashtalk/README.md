@@ -1,3 +1,3 @@
 # Flash Talk Folder
 
-Put a PDF with a single slide for your flash talk here.
+This is the slide from our flash talk, together with the project proposal.
