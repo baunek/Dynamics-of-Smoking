@@ -643,9 +643,9 @@ def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment
     more_likely2 = quitter_rel_change / rel_change
     print('A neighbour is ', round(more_likely2, 2),' times more likely to not smoke if the agent quits')
 
-    print("Fehlersuche:")
-    print(smoker_before)
-    print(quitter_smoker_before)
+    #print("Fehlersuche:")
+    #print(smoker_before)
+    #print(quitter_smoker_before)
 
 def ExportGraph(Environment, akey):
     env = Environment.copy()
@@ -771,7 +771,9 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
 
     # Simulation
     results, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non)
-
+    
+    print('The final percentage of smokers is: ', round(numbers[-1,1]*100/numAgents, 1))
+    
     ExportGraph(Environment, "end") # Saves the final graph
 
     analyse_influence(AgentList,Environment, bin_number = 14)
@@ -902,13 +904,14 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
 
 
 
+
     """
     ****************** Plot Experiment 1 - Analysis of the impact parameters ***********************
     """
 
     #Full population
     plt.figure(figsize = (12, 8))
-    levels = np.linspace(0,1, 14)
+    levels = np.linspace(0,1, 11)
     contour = plt.contour(impact_non_range, impact_smoke_range, exp_result, levels, colors='k')
     plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result, levels)
@@ -916,13 +919,15 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     plt.title('Final percentage of smokers in population', fontsize = 'xx-large')
     plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
     plt.ylabel('Impact smoker []', fontsize = 'xx-large')
-    plt.grid()
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
+    #plt.grid()
     plt.savefig('Parameter-Dynamics.PNG')
     plt.show()
 
     #Woman
     plt.figure(figsize = (12, 8))
-    levels = np.linspace(0,1, 14)
+    levels = np.linspace(0,1, 11)
     contour = plt.contour(impact_non_range, impact_smoke_range, exp_result_w, levels, colors='k')
     plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result_w, levels)
@@ -930,14 +935,16 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     plt.title('Final percentage of woman smoking', fontsize = 'xx-large')
     plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
     plt.ylabel('Impact smoker []', fontsize = 'xx-large')
-    plt.grid()
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
+    #plt.grid()
     plt.savefig('Woman-Parameter-Dynamics.PNG')
     plt.show()
 
 
     #Men
     plt.figure(figsize = (12, 8))
-    levels = np.linspace(0,1, 14)
+    levels = np.linspace(0,1, 11)
     contour = plt.contour(impact_non_range, impact_smoke_range, exp_result_m, levels, colors='k')
     plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result_m, levels)
@@ -945,7 +952,9 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     plt.title('Final percentage of men smoking', fontsize = 'xx-large')
     plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
     plt.ylabel('Impact smoker []', fontsize = 'xx-large')
-    plt.grid()
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
+    #plt.grid()
     plt.savefig('Men-Parameter-Dynamics.PNG')
     plt.show()
 
@@ -1018,6 +1027,8 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
     plt.title('Time propagation against impact of smokers', fontsize = 'xx-large')
     plt.xlabel('Time step []', fontsize = 'xx-large')
     plt.ylabel('Impact smoker', fontsize = 'xx-large')
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.savefig('Time-Propagation.PNG')
     plt.show()
 
@@ -1041,7 +1052,7 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
     #Original population
     AgentList0 = InitializeAgentPolulation(numAgents)
     Environment0 = GenerateFriendshipGraph(AgentList0,friend_prob)
-
+    
     #Percentage of smokers in population after TimeSteps
     result1 = np.zeros(SampleSize)
     result1_w = np.zeros(SampleSize)
@@ -1063,13 +1074,15 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
     plt.hist(result1, Bins1, normed = True, facecolor='grey')
     plt.title('Histogram for given initial population', fontsize = 24)
     plt.xlabel('Final percentage of smokers', fontsize = 24)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.savefig('Stability_Histogram1.PNG')
     plt.show()
     
-
     std_deviation1 = np.std(result1)
 
     print('For a given initial population, the standard deviation of the final percentage of smoker is: ',round(std_deviation1 , 4))
+    print('The mean result is: ', round(np.mean(result1) * 100, 1))
 
     #Answer to question b) For random initial populations, how big is the standard deviation of the resulting final percentage of smokers?
 
@@ -1077,11 +1090,12 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
     result2 = np.zeros(SampleSize)
     result2_w = np.zeros(SampleSize)
     result2_m = np.zeros(SampleSize)
+    
 
     for i in range(SampleSize):
 
-        AgentList = InitializeAgentPolulation(numAgents)
-        Environment = GenerateFriendshipGraph(AgentList0,friend_prob)
+        AgentList = copy.deepcopy(AgentList0)
+        Environment = GenerateFriendshipGraph(AgentList,friend_prob)
         #numbers : number of smoker
         _, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non, set_seed = False)
 
@@ -1094,6 +1108,8 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
     plt.hist(result2, Bins2, normed = True, facecolor='grey')
     plt.title('Histogram for random population', fontsize = 24)
     plt.xlabel('Final percentage of smokers', fontsize = 24)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
     plt.savefig('Stability_Histogram2.PNG')
     plt.show()
 
@@ -1101,19 +1117,26 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 
     print('For random initial populations, the standard deviation of the final percentage of smoker is: ',round(std_deviation2 , 4))
 
+    print('The mean result is: ', round(np.mean(result2) * 100, 1))
 
 
 
+ 
 
 """
 ******************* Main ***************************
 """
 
 #Run Simulation 
-run_simulation(numAgents = 300, friend_prob = [0.01, 0.005], TimeSteps = 30, impact_smoke = 0.42, impact_non = 0.2, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+#run_simulation(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
 
-run_experiment1(numAgents = 300, friend_prob = [0.01, 0.006], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 1, min_non_impact = 0.01, max_non_impact = 0.5)
+run_experiment1(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 4, min_smoke_impact = 0.03, max_smoke_impact = 0.07, min_non_impact = 0.005, max_non_impact = 0.02)
 
-run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 4)
+#run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.2, impact_non = 0.01, min_TimeStep = 0, Stepsize = 4)
 
-Determinism_test(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.51, impact_non = 0.2, SampleSize = 40, Bins1 = 4, Bins2 = 8)
+Determinism_test(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, SampleSize = 15, Bins1 = 4, Bins2 = 8)
+
+
+
+
+
