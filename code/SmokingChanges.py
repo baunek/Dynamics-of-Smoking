@@ -451,8 +451,9 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
     for agent in AgentList:
         if agent._sex == "Male":
             number_of_males += 1
-
-    print("Percentage of smokers changed from", round(numbers[0][1]/3,2) , "to","%.4f" % round(numbers[-1][1]/3,2) )
+    
+    #print("The percentage of smokers changed from", round(numbers[0][1]/3,1) , "% to","%.1f" % round(numbers[-1][1]/3,1), '%')
+    
     return simResults, numbers, numbers_m, numbers_w, number_of_males
 
 
@@ -740,8 +741,8 @@ def Graph_test(AgentList, Environment):
     smoker_percentage = round(smoker_smoker_neigh / max(smoker_neigh, 1), 2)
     non_percentage = round(non_smoker_neigh / max(non_neigh, 1), 2)
 
-    print('Non-smokers have ', 100 * non_percentage, '% smoking neighbours on average at the start of the simulation.')
-    print('Smokers have', 100 * smoker_percentage, '% smoking neighbours on average at the start of the simulation.')
+    print('Non-smokers have ', round(100 * non_percentage, 1), '% smoking neighbours on average at the start of the simulation.')
+    print('Smokers have', round(100 * smoker_percentage,1), '% smoking neighbours on average at the start of the simulation.')
 
 
 
@@ -773,7 +774,7 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
         PlotGraph(Environment) # Plots the initial graph
 
     #print(nx.eigenvector_centrality(Environment, max_iter=100, tol=1e-06, nstart=None, weight='weight'))
-    print("Average Clustering: ",round(nx.average_clustering(Environment), 3))
+    print("The average clustering coefficient of the network is: ",round(nx.average_clustering(Environment), 3))
 
     #PrintAgentsInfo() # Prints the infos of the agents in the final state
 
@@ -795,13 +796,19 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
     # Simulation
     results, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non)
     
-    print('The final percentage of smokers is: ', round(numbers[-1,1]*100/numAgents, 1))
+    print("The percentage of smokers changed from", round(numbers[0][1]/3,1) , "% to","%.1f" % round(numbers[-1][1]/3,1), '%')
     
     ExportGraph(Environment, "end") # Saves the final graph
 
-    analyse_influence(AgentList,Environment, bin_number = 14)
-
-    analyse_influence_quitting(AgentList0, Environment0, AgentList, Environment)
+    #Analyse the result
+    if analyse_inf: 
+        
+        average_friends(Environment)
+        analyse_influence(AgentList,Environment, bin_number = 14)
+    
+    #Further analyse the result
+    if analyse_quitting_inf: 
+        analyse_influence_quitting(AgentList0, Environment0, AgentList, Environment)
 
     """
     ******************* Plot Simulation ***************************
@@ -812,61 +819,66 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
     plt.rcParams["animation.html"] = "jshtml"
     import numpy as np
 
-
-    # Build plot
-    fig, ax = plt.subplots(figsize=(10,7))
-    resultsCopy= deepcopy(results)
-
-    def animate(j):
-        ax.clear()
-        PlotGraph(Environment,color_map=resultsCopy[j],ax=ax)
-
-
     if(draw):
+
+        # Build plot
+        fig, ax = plt.subplots(figsize=(10,7))
+        resultsCopy= deepcopy(results)
+
+
+        def animate(j):
+            ax.clear()
+            PlotGraph(Environment,color_map=resultsCopy[j],ax=ax)
+
+
         ani = matplotlib.animation.FuncAnimation(fig, animate, frames=len(results))
         ani.save('mymovie.html')
 
     if(plot):
         # Total
         plt.figure(figsize = (12,8))
-        plt.plot(np.arange(TimeSteps+1),numbers[:,0],label='non-smokers')
+        plt.plot(np.arange(TimeSteps+1),numbers[:,0],label='non-smokers', linewidth = 2.5)
 
-
-        plt.plot(np.arange(TimeSteps+1),numbers[:,1],label='smokers')
-        plt.legend()
-        plt.title('Total')
-        plt.xlabel('Number timesteps')
-        plt.ylabel('Number of agents')
+        plt.plot(np.arange(TimeSteps+1),numbers[:,1],label='smokers', linewidth = 2.5)
+        plt.legend(fontsize = 24)
+        plt.title('Total',fontsize = 24)
+        plt.xlabel('Number timesteps',fontsize = 24)
+        plt.ylabel('Number of agents',fontsize = 24)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
         plt.grid()
         plt.show()
 
         # Men
         plt.figure(figsize = (12,8))
-        plt.plot(np.arange(TimeSteps+1),numbers_m[:,0],label='non-smokers')
+        plt.plot(np.arange(TimeSteps+1),numbers_m[:,0],label='non-smokers', linewidth = 2.5)
 
-        plt.plot(np.arange(TimeSteps+1),numbers_m[:,1],label='smokers')
-        plt.legend()
-        plt.title('Men')
-        plt.xlabel('Number timesteps')
-        plt.ylabel('Number of agents')
+        plt.plot(np.arange(TimeSteps+1),numbers_m[:,1],label='smokers', linewidth = 2.5)
+        plt.legend(fontsize = 24)
+        plt.title('Men',fontsize = 24)
+        plt.xlabel('Number timesteps',fontsize = 24)
+        plt.ylabel('Number of agents',fontsize = 24)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
         plt.grid()
         plt.show()
 
         # Women
         plt.figure(figsize = (12,8))
-        plt.plot(np.arange(TimeSteps+1),numbers_w[:,0],label='non-smokers')
+        plt.plot(np.arange(TimeSteps+1),numbers_w[:,0],label='non-smokers', linewidth = 2.5)
 
-        plt.plot(np.arange(TimeSteps+1),numbers_w[:,1],label='smokers')
-        plt.legend()
-        plt.title('Women')
-        plt.xlabel('Number timesteps')
-        plt.ylabel('Number of agents')
+        plt.plot(np.arange(TimeSteps+1),numbers_w[:,1],label='smokers', linewidth = 2.5)
+        plt.legend(fontsize = 24)
+        plt.title('Women',fontsize = 24)
+        plt.xlabel('Number timesteps',fontsize = 24)
+        plt.ylabel('Number of agents',fontsize = 24)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
         plt.grid()
         plt.show()
 
         #PrintAgentsInfo()
 
-        average_friends(Environment)
 
 
 """
@@ -1151,13 +1163,13 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 """
 
 #Run Simulation 
-run_simulation(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True)
+run_simulation(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, plot = True, draw = False, analyse_inf = False, analyse_quitting_inf = False)
 
-#run_experiment1(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 4, min_smoke_impact = 0.03, max_smoke_impact = 0.07, min_non_impact = 0.005, max_non_impact = 0.02)
+#run_experiment1(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.03, max_smoke_impact = 0.07, min_non_impact = 0.005, max_non_impact = 0.02)
 
-#run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.01, max_smoke_impact = 0.2, impact_non = 0.01, min_TimeStep = 0, Stepsize = 4)
+#run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.1, max_smoke_impact = 0.3, impact_non = 0.1, min_TimeStep = 0, Stepsize = 4)
 
-Determinism_test(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, SampleSize = 50, Bins1 = 4, Bins2 = 8)
+#Determinism_test(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1, SampleSize = 50, Bins1 = 4, Bins2 = 8)
 
 
 
