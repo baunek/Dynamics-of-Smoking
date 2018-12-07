@@ -14,7 +14,7 @@ In our project we want to use the resulting data to see how smoking beahvior spr
 
 ## The Model
 
-(Define dependent and independent variables you want to study. Say how you want to measure them.) (Why is your model a good abstraction of the problem you want to study?) (Are you capturing all the relevant aspects of the problem?)
+In our project we tried to model a society and the connections that different people have to each other. In our model we used certain types of graphs that make our modelled society similar to the connections in a real society. Each agent of our modelled population has a smoking habit, the so-called state, that can either be smoker or non-smoker. In each iteration, every agent has influence on the state of the agents that it is connected to. This influence is determined by the impact parameters of our model, that can be different for smokers and non-smokers. As we wanted a stable model that is also reproducable, we did not implement all sorts of specifications of the agents, but thought of different improvements that could be made. These possible extensions of our model are also described in our report.
 
 
 ## Fundamental Questions
@@ -26,15 +26,14 @@ Do our results reflect the reality, for example the smokers data from Switzerlan
 
 ## Expected Results
 
-(What are the answers to the above questions that you expect to find before starting your research?)
+Our model should show similar results to the Framingham Heart Study. Here, the number of smokers decreased over time, while groups of smokers and non-smokers were formed.
 
 
 ## References 
 
-(Add the bibliographic references you intend to use)
-(Explain possible extension to the above models)
-(Code / Projects Reports of the previous year)
-
+Nicholas  A.  Christakis,  James  H.  Fowler:   The  Collective  Dynamics  of  Smoking  in  a  Large  Social Network (2008) ("Framingham Heart Study")
+https://www.bfs.admin.ch/bfs/de/home/statistiken/gesundheit/determinanten/tabak.html, retrieved on 07/10/2018
+https://www.indexmundi.com/switzerland/agestructure.html, retrieved on 23/11/2018
 
 ## Research Methods
 
@@ -43,7 +42,6 @@ Do our results reflect the reality, for example the smokers data from Switzerlan
 
 ## Other
 
-(mention datasets you are going to use)
 
 # Reproducibility
 
