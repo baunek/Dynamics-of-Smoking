@@ -39,7 +39,7 @@ Our model should show similar results to the Framingham Heart Study. Here, the n
 
 [4] Tamara G. Kolda; Ali Pinar; others. FEASTPACK v1.2. Sandia National Laboratorie. Nov. 27, 2018. url: https://www.sandia.gov/~tgkolda/feastpack/.
 
-[5] C. Seshadhri, Tamara G. Kolda, and Ali Pinar. “Community structure and scale-free collections of Erdo ̋s-R ́enyi graphs”. In: Phys. Rev. E 85 (5 May 2012), p. 056109. doi: 10.1103/PhysRevE.85.056109. url: https://link.aps.org/doi/10.1103/ PhysRevE.85.056109.
+[5] C. Seshadhri, Tamara G. Kolda, and Ali Pinar. “Community structure and scale-free collections of Erdos-Renyi graphs”. In: Phys. Rev. E 85 (5 May 2012), p. 056109. doi: 10.1103/PhysRevE.85.056109. url: https://link.aps.org/doi/10.1103/ PhysRevE.85.056109.
 
 [6] Bundesamt für Statistik. Tabakkonsum in der Schweiz. Oct. 7, 2018. url: https://www.bfs.admin.ch/bfs/de/home/statistiken/gesundheit/determinanten/tabak.html.
 
