@@ -1096,13 +1096,13 @@ def Determinism_test(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 
 
 #Uncomment to run the desired simulation.
 
-#run_simulation(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, impact_smoke = 0.18, impact_non = 0.1, plot = True, analyze_inf = True, analyze_quitting_inf = False)
+run_simulation(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, impact_smoke = 0.18, impact_non = 0.1, plot = True, analyze_inf = True, analyze_quitting_inf = False)
 
-#run_experiment1(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.05, max_smoke_impact = 0.5, min_non_impact = 0.05, max_non_impact = 0.25)
+run_experiment1(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.05, max_smoke_impact = 0.5, min_non_impact = 0.05, max_non_impact = 0.25)
 
-#run_experiment2(numAgents = 300, friend_prob = [0.005, 0.005], Gridlength = 8, min_smoke_impact = 0.05, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 4)
+run_experiment2(numAgents = 300, friend_prob = [0.005, 0.005], Gridlength = 8, min_smoke_impact = 0.05, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 4)
 
-Determinism_test(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1, SampleSize = 50, Bins1 = 40, Bins2 = 50)
+#Determinism_test(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1, SampleSize = 50, Bins1 = 40, Bins2 = 50)
 
 
 
