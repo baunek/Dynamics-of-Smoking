@@ -32,11 +32,17 @@ Our model should show similar results to the Framingham Heart Study. Here, the n
 ## References 
 
 [1] Nicholas A. Christakis and James H. Fowler. “The Collective Dynamics of Smoking in a Large Social Network”. In: New England Journal of Medicine 358.21 (May 2008), pp. 2249–2258. doi: 10.1056/nejmsa0706154.
+
 [2] Tamara G. Kolda et al. “A Scalable Generative Graph Model with Community Struc- ture”. In: SIAM Journal on Scientific Computing 36.5 (Jan. 2014), pp. C424–C452. doi: 10.1137/130914218.
+
 [3] Mark Newman. Networks: An Introduction. Oxford University Press, 2010. isbn: 978- 0-19-920665-0.
+
 [4] Tamara G. Kolda; Ali Pinar; others. FEASTPACK v1.2. Sandia National Laboratorie. Nov. 27, 2018. url: https://www.sandia.gov/~tgkolda/feastpack/.
+
 [5] C. Seshadhri, Tamara G. Kolda, and Ali Pinar. “Community structure and scale-free collections of Erdo ̋s-R ́enyi graphs”. In: Phys. Rev. E 85 (5 May 2012), p. 056109. doi: 10.1103/PhysRevE.85.056109. url: https://link.aps.org/doi/10.1103/ PhysRevE.85.056109.
+
 [6] Bundesamt fu ̈r Statistik. Tabakkonsum in der Schweiz. Oct. 7, 2018. url: https: / / www . bfs . admin . ch / bfs / de / home / statistiken / gesundheit / determinanten / tabak.html.
+
 [7] Switzerland Age structure. Nov. 23, 2018. url: https : / / www . indexmundi . com / switzerland/age_structure.html.
 
 ## Research Methods
