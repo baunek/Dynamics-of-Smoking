@@ -56,9 +56,10 @@ In order to reproduce some of our results, follow the instructions below (you ne
 
 If using git, use the commands:
 * git clone https://github.com/baunek/Dynamics-of-Smoking.git
+* cd Dynamics-of-Smoking
 * cd code
 * python3 SmokingChanges.py
- 
+
 If not using git, download all files from the code folder and store them in one folder on your computer ("SmokingChanges.py", "edgesdata.mat", "300nodes.mat", "500nodes.mat" and "1000nodes.mat" are all needed for the light test). Then open your console and direct yourself to the folder in which the files are stored. Then use the command "pyhton3 SmokingChanges.py" to run the file.
 
 Now you then should be able to reproduce the main results of our project that are also shown in the media folder (not all of the images from the media folder will be produced). As our results depend on random variables, some results will look different for each run.
