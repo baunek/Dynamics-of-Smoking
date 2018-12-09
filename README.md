@@ -64,4 +64,4 @@ If not using git, download all files from the code folder and store them in one 
 
 Now you then should be able to reproduce the main results of our project that are also shown in the media folder (not all of the images from the media folder will be produced). As our results depend on random variables, some results will look different for each run.
 
-These instructions can also be found (together with the instructions of the full test) in the pdf "Reproducibility.pdf", which will be uploaded soon.
+These instructions can also be found (together with the instructions of the full test) in the pdf "Reproducibility.pdf" in the code section. 
