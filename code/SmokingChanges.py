@@ -871,7 +871,7 @@ def run_experiment1(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30
 
 
     t1 = time.perf_counter()
-    print('Da Experiment hat',t1 - t0, 'Sekunden gedauert.')
+    print('The experiment took',t1 - t0, ' seconds.')
 
 
 
@@ -975,7 +975,7 @@ def run_experiment2(numAgents = 300, friend_prob = [0.005, 0.005], Gridlength = 
             exp_result_m[i,j] = numbers_w_exp1[-1,1]/number_of_males
 
     t1 = time.perf_counter()
-    print('Da Experiment hat',t1 - t0, 'Sekunden gedauert.')
+    print('The experiment took',t1 - t0, 'seconds.')
 
 
 
