@@ -52,7 +52,7 @@ For our project we want to use an agent-based model where the agents are connect
 
 # Reproducibility
 
-In order to reproduce some of our results, follow the instructions below (you need to have python3 installed on your computer):
+In order to reproduce some of our results, follow the instructions below (you need to have python3 installed on your computer with the module networkx):
 
 If using git, use the commands:
 * git clone https://github.com/baunek/Dynamics-of-Smoking.git
