@@ -61,4 +61,6 @@ If using git, use the commands:
  
 If not using git, download all files from the code folder and store them in one folder on your computer ("SmokingChanges.py", "edgesdata.mat", "300nodes.mat", "500nodes.mat" and "1000nodes.mat" are all needed for the light test). Then open your console and direct yourself to the folder in which the files are stored. Then use the command "pyhton3 SmokingChanges.py" to run the file.
 
-Now you then should be able to reproduce the main results of our project that are also shown in the media folder. As our results depend on random variables, some results will look different for each run.
+Now you then should be able to reproduce the main results of our project that are also shown in the media folder (not all of the images from the media folder will be produced). As our results depend on random variables, some results will look different for each run.
+
+These instructions can also be found (together with the instructions of the full test) in the pdf "Reproducibility.pdf", which will be uploaded soon.
