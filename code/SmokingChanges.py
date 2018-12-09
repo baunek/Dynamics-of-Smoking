@@ -19,79 +19,69 @@ import random
 from random import shuffle
 import matplotlib.pyplot as plt
 import numpy as np
-from networkx.drawing.nx_agraph import graphviz_layout
 import scipy.io as spio
 import copy
 from copy import deepcopy
-#matplotlib.use("Agg")
 
 #Parent Abstract class
 class GenericAgent(ABC):
-    #Made this an abstract method
     @abstractmethod
     def __init__(self,gid,atype,sex,age):
-        self.plotSpacewidth=3
 
-        # States: -1 (Smoker), 1 (Non-Smoker)
+        #States: -1 (Smoker), 1 (Non-Smoker)
         self.state = atype
-        # next_state to save the state for the next timestep in each iteration
+        
+        #State for the next timestep in each iteration
         self.next_state=0
 
-        # Id in the simulation
+        #Id in the simulation
         self.gid=gid
 
-        # Introducing continuous states for each agent
+        #Introducing continuous states for each agent
         if self.state == 1:
             self.state_con = 0.5
         elif self.state == -1:
             self.state_con = -0.5
 
-        # Age:
+        # Age
         self._age = age
 
         #Agent type
         self._sex=sex
 
-        #Probability of starting to smoke per interaction
-        self._beta=0
-
-        #Probability of stopping to smoke
-        self._gamma=0
-
-        #Position of the agent in the map (can be ignored, the position is changed when the graph is created)
-        self.position=[self.gid%self.plotSpacewidth,self.gid//self.plotSpacewidth]
-
+        #Counting how often an agent changes state during the simulation
+        #Used for diagnostics
         self.changes = 0
 
         super().__init__()
 
-
-    def friends(self,environment):
-        friends = []
-        for neigh in environment.neighbors(self.gid):
-            friends.append(environment.nodes[neigh].gid)
-        return friends
-
-    def perceive(self,environment):
+    def perceive(self, environment):
+        """
+        Perceive returns an array of shape (2, number of neighbors). A neighbor
+        is an agent who is connected through an edge to self in Environment.
+        
+        perception[0,:] is an array containing the states (-1 or 1) of the neighbors of self
+        perception[1,:] is an array containing the weights of the edges to the neighbors
+        """
         perception = np.zeros((2,len(list(environment.neighbors(self.gid)))))
-        #The perceptoin consists of the neighbors of the agent and their state
         for i, neigh in enumerate(environment.edges(self.gid, data = 'weight')):
             perception[:,i] = np.array([environment.nodes[neigh[1]]['data'].state_con, neigh[2]])
         return perception
 
-    def act(self,perception, impact_smoke, impact_non):
-
-        next_state=self.state
-        #impact_smoke = 0.5
-        #impact_non = 0.36
-        #For every neighbour it interacts with
+    def act(self, perception, impact_smoke, impact_non):
+        """
+        Decides about the next state of the agent using the information about his
+        environment (perception) and using the impact parameters (impact_smoke,
+        impact_non)
+        
+        A detailed description can be found in section 2.2 of our report
+        """
+        self.next_state=self.state
         num_neigh = len(perception[0,:])
 
 
         for val, weight in zip(perception[0,:], perception[1,:]):
-            #if the neighbour smokes, that person will smoke with prob self.beta
             sample = np.random.normal(1, 0.3)
-            #print(impact_non, impact_smoke)
 
             if val > 0:
                 self.state_con = min(self.state_con + weight * impact_non * sample/max(num_neigh, 1), 1)
@@ -111,60 +101,62 @@ class GenericAgent(ABC):
         if self.state != self.next_state:
             self.changes += 1
 
-        #if the agent itself is smoking, it will stop smoking with probability self.gamma
-        #if self.state == 1:
-        #    sample=np.random.uniform(0,1)
-        #    if self._gamma<sample:
-        #        next_state=2
-
-        #The states are updated at the end of the timestep
-        #self.next_state=next_state
-
     def update(self):
         #Updating step
         self.state=self.next_state
+        
+        #For possible extensions:
         #self._age += 1
 
-
     def info(self):
-        #print("Agent ",self.gid,", of age ",self._age,", of sex ",self._sex,", state ",self.state, ", con-state", self.state_con," at position ",self.position)
         print(self.state_con, self.changes)
 
-"""
-# Agents without sex or age
-class Agent(GenericAgent):
-    def __init__(self,gid,atype):
-        #atype = int(np.round(np.random.rand()))
-        super().__init__(gid,atype)
-        self._beta=0.01
-        self._gamma=0.01
-"""
 
 #Agents for males and females with age
 class Male(GenericAgent):
     def __init__(self,gid,atype,sex,age):
         super().__init__(gid,atype,sex,age)
-        self._beta=0.05
-        self._gamma=0.05
 
 class Female(GenericAgent):
     def __init__(self,gid,atype,sex,age):
         super().__init__(gid,atype,sex,age)
-        self._beta=0.05
-        self._gamma=0.05
+
+#Random numbers for use in all simulations 
+a150 = np.arange(150)
+np.random.shuffle(a150)
+b150 = np.arange(150)
+np.random.shuffle(b150)
+a300 = np.arange(300)
+np.random.shuffle(a300)
+b300 = np.arange(300)
+np.random.shuffle(b300)
+a500 = np.arange(500)
+np.random.shuffle(a500)
+b500 = np.arange(500)
+np.random.shuffle(b500)
+a1000 = np.arange(1000)
+np.random.shuffle(a1000)
+b1000 = np.arange(1000)
+np.random.shuffle(b1000)
 
 def InitializeUSAgent(numAgents):
-    #this function was used to test our model against the observed changes during the Framingham Heart study
-    #it sucesfully demonstrates the gradual decrase of smoking from 45% to 22% +_3% of the population over a period of 40years(steps)
+    """
+    Creates a list of agents (as instances of the class GenericAgent) according
+    to the age population and smoking distribution in the US in 1979.
+    """
     percw = 0.40
     percm = 0.50
     perc = [percm,percw] # not used
 
     AgentList=[]
-    a = np.arange(numAgents)
-    b = np.arange(numAgents)
-    np.random.shuffle(a)
-    np.random.shuffle(b)
+    if numAgents == 150:
+        a = a150 ; b = b150
+    elif numAgents == 300:
+        a = a300 ; b = b300
+    elif numAgents == 500:
+        a = a500 ; b = b300
+    elif numAgents == 1000:
+        a = a1000 ; b = b1000
 
     # Age distribution 1979 US: https://www.cdc.gov/nchs/data/statab/pop6097.pdf
     #  0-14 years: 22.9% (not to be considered in this model, as assumed to be non-smokers)
@@ -215,26 +207,12 @@ def InitializeUSAgent(numAgents):
 
     return AgentList
 
-#Random numbers for use in all simulations 
-a150 = np.arange(150)
-np.random.shuffle(a150)
-b150 = np.arange(150)
-np.random.shuffle(b150)
-a300 = np.arange(300)
-np.random.shuffle(a300)
-b300 = np.arange(300)
-np.random.shuffle(b300)
-a500 = np.arange(500)
-np.random.shuffle(a500)
-b500 = np.arange(500)
-np.random.shuffle(b500)
-a1000 = np.arange(1000)
-np.random.shuffle(a1000)
-b1000 = np.arange(1000)
-np.random.shuffle(b1000)
 
-
-def InitializeAgentPolulation(numAgents):
+def InitializeAgentPopulation(numAgents):
+    """
+    The structure and purpose of this function is the same as for InitializeUSAgent().
+    However, here we use Swiss data from 2012 for the age and smoking distribution.
+    """
     # smoking in Switzerland:
     # Women: 24.2 %
     # Men: 32.4 %
@@ -261,8 +239,6 @@ def InitializeAgentPolulation(numAgents):
     elif numAgents == 1000:
         a = a1000 ; b = b1000
         
-    
-    #percsmokers = 0.55 (not used at the moment)
 
     for x,i in enumerate(a):
         # determining age
@@ -313,30 +289,12 @@ def PrintAgentsInfo():
         agent.info()
 
 
-#Plots the interaction graph with the states used as a color map
-def PlotGraph(G,color_map=None,ax=None):
-    #Extract the positions
-    pos = {node[0]: (node[1]['data'].position[0],node[1]['data'].position[1]) for node in G.nodes(data=True)}
-    if color_map is None:
-        color_map = [node[1]['data'].state for node in G.nodes(data=True)]
-
-    #Change numerical values for colors
-    for i in range(len(color_map)):
-        if color_map[i] == 1:
-            color_map[i] = "green"
-        elif color_map[i] == -1:
-            color_map[i] = "red"
-
-
-    #Plot on a specific figure or not
-    if ax is None:
-        nx.draw(G,pos,node_color = color_map, with_labels=True, font_weight='bold', node_size = 300)
-    else:
-        nx.draw(G,pos,node_color = color_map, ax=ax, with_labels=True, font_weight='bold', node_size = 300)
-
-
-#Generates the interaction maps between the agents
-def GenerateFriendshipGraph(AgentList,friend_prob):
+def GenerateFriendshipGraph(AgentList, friend_prob):
+    """
+    Generates a NetworkX graph as described in section 3.1 in the report
+    friend_prob[0] ....  Erdos-Renyi-probability for the friendship connections
+    friend_prob[1] ....  Erdos-Renyi-probability for the family connections
+    """
     #Create an empty graph
     G=nx.Graph()
 
@@ -347,11 +305,28 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
     G_erdos = nx.erdos_renyi_graph(len(G.nodes),friend_prob[1])
     G.add_edges_from(G_erdos.edges(), weight = 1.2)
 
-    #Create friendship links between agents using erdos renyi method
+    #Create friendship links between agents using Erdos-Renyi method
     G_erdos = nx.erdos_renyi_graph(len(G.nodes),friend_prob[0])
     G.add_edges_from(G_erdos.edges(), weight = 1)
 
     #Enhance realisticness of the graph by adding egdes from BTER model
+    #The files edgesdata.mat, 300nodes.mat, 500nodes.mat, and 1000nodes.mat were created
+    #with "FEASTPACK v1.2". We only included the output files of "FEASTPACK v1.2"
+    #in this code and our GitHub repository. No source or binary code was redistributed.
+    #We still include the following Copyright notice:
+    
+    #Copyright (c) 2014, Sandia National Laboratories All rights reserved.
+    #THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    #AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    #IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    #ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    #LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    #DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+    #SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    #CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    #OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    
     numAgents = len(AgentList)
 
     if numAgents == 150:
@@ -365,56 +340,42 @@ def GenerateFriendshipGraph(AgentList,friend_prob):
     else:
         print('Invalid number of agents choosen!')
 
-
     E1 = mat['E1']
     edges_list = []
     for i in range(E1.shape[0]):
         edges_list.append(tuple(E1[i,:]))
 
     G.add_edges_from(edges_list, weight = 1)
-    #Update the position of the agents for a nicer visualization (only relevant for visualization in the current code)
-    pos = nx.random_layout(G, dim=2)
-    for i in range(len(AgentList)):
-        AgentList[i].position[0]=pos[i][0]
-        AgentList[i].position[0]=pos[i][1]
-
+    
     return G
-"""
-    for agent in AgentList:
-        for friend in AgentList:
-            if G.has_edge(agent,friend):
-                for friendfriend in AgentList:
-                    if G.has_edge(friend,friendfriend):
-                        sample = np.random.rand()
-                        if sample < 20*friend_prob:
-                            G.add_edge(agent,friendfriend)
-"""
 
-def step(AgentList,Environment, impact_smoke, impact_non):
-    #Agents need to be shuffled to eliminate the unrealistic advantage of having a lower gid
-    #shuffle(AgentList)
+def step(AgentList, Environment, impact_smoke, impact_non):
+    """
+    Computes one time step of the simulation.
+    """
 
     #Execute all agents
     for agent in AgentList:
-        #print("Executing agent ",agent.gid)
         perception = agent.perceive(Environment)
         agent.act(perception, impact_smoke, impact_non)
+        
     #Update all agents
     for agent in AgentList:
         agent.update()
-        #agent.info()
 
 
-def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.36, set_seed = True):
+def simulate(AgentList, Environment, numSteps, impact_smoke = 0.2, impact_non = 0.1, set_seed = False):
     numAgents = len(AgentList)
-
+    """
+    Repeatedly call the function step() and keeps track of the number of smokers (numbers).
+    """
     #Always use the same random numbers
     if set_seed:
         np.random.seed(0)
 
     # Store the initial state
     simResults=[[node[1]['data'].state for node in Environment.nodes(data=True)]]
-    numbers = []
+    numbers = [] #numbers = numbers of smokers
     numbers_m = []
     number_m = 0
     number = 0
@@ -444,7 +405,6 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
     numbers = np.array(numbers)
     numbers_m = np.array(numbers_m)
     numbers_w = numbers - numbers_m
-    #ExportGraph(Environment)
 
     #Count the number of males in the population
     number_of_males = 0
@@ -452,16 +412,15 @@ def simulate(AgentList,Environment,numSteps, impact_smoke = 0.5, impact_non = 0.
         if agent._sex == "Male":
             number_of_males += 1
     
-    #print("The percentage of smokers changed from", round(numbers[0][1]/3,1) , "% to","%.1f" % round(numbers[-1][1]/3,1), '%')
-    
     return simResults, numbers, numbers_m, numbers_w, number_of_males
 
 
 
-def analyse_influence(AgentList, Environment, bin_number = 6):
+def analyze_influence(AgentList, Environment, bin_number = 20):
     """
     Function plots a histogram that shows the percentage of people smoking if they live in an
-    enviromnment with a certain percentage of smokers
+    enviromnment with a certain percentage of smokers.
+    The bin_number is used for the plot.
     """
     #Stores status of the agent and the smoker percentage of his environment
     result = np.zeros((len(AgentList),2))
@@ -500,19 +459,20 @@ def analyse_influence(AgentList, Environment, bin_number = 6):
         else:
             percentage[n] = 0
 
-
     #Plot result of examination
     bins = np.linspace(0, 1, bin_number)
     plt.figure(figsize = (12, 8))
     plt.step(bins, percentage, 0.9 / bin_number, label  = 'Probability that agent is a smoker', linewidth = 3)
-    plt.xlabel('Percentage of smokers in environment', fontsize = 24)
-    plt.ylabel('Probability that agent is a smoker', fontsize = 24)
+    plt.xlabel('Share of smokers in environment', fontsize = 22)
+    plt.ylabel('Probability that agent is a smoker', fontsize = 22)
+    plt.xticks(fontsize = 18)
+    plt.yticks(fontsize = 18)
     plt.grid(True)
     plt.savefig('Influence of environment.PNG')
     plt.show()
 
 
-def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment1):
+def analyze_influence_quitting(AgentList0, Environment0, AgentList1, Environment1):
     """
     Function examines the influence of an Agent quitting on his environment
 
@@ -667,11 +627,16 @@ def analyse_influence_quitting(AgentList0, Environment0, AgentList1, Environment
     more_likely2 = quitter_rel_change / rel_change
     print('A neighbour is ', round(more_likely2, 2),' times more likely to not smoke if the agent quits')
 
-    #print("Fehlersuche:")
-    #print(smoker_before)
-    #print(quitter_smoker_before)
-
 def ExportGraph(Environment, akey):
+    """
+    PRE: Environment, Networkx Graph
+         akey, String
+         
+    POST: Saves Environment as "akey.gexf" in local directory. In "data" the states
+          of the agents are stored (-1 or 1)
+         
+    A ".gexf" file can be imported to other software, e.g. Gephi.
+    """
     env = Environment.copy()
     agent_dict = nx.get_node_attributes(env, 'data')
     for key in agent_dict:
@@ -740,7 +705,8 @@ def Graph_test(AgentList, Environment):
     #Compute the percentage of smokers in the environment
     smoker_percentage = round(smoker_smoker_neigh / max(smoker_neigh, 1), 2)
     non_percentage = round(non_smoker_neigh / max(non_neigh, 1), 2)
-
+    
+    print()
     print('Non-smokers have ', round(100 * non_percentage, 1), '% smoking neighbours on average at the start of the simulation.')
     print('Smokers have', round(100 * smoker_percentage,1), '% smoking neighbours on average at the start of the simulation.')
 
@@ -753,86 +719,60 @@ def Graph_test(AgentList, Environment):
 """
 
 
-def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40, impact_smoke = 0.3, impact_non = 0.1,
-                   plot = True, draw = False, analyse_inf = True, analyse_quitting_inf = True):
+def run_simulation(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1,
+                   plot = True, analyze_inf = True, analyze_quitting_inf = True):
 
+    print('**********************************************************************************')
+    print('RUNNING: Basic Simulation')
+    print('**********************************************************************************')
+    
     """
     ****************** Initialize population ***********************
     """
 
-    # Initial conditions
-    #numAgents = 150
-    AgentList = InitializeAgentPolulation(numAgents)
+    AgentList = InitializeAgentPopulation(numAgents)
 
-    #PrintAgentsInfo() # Prints the infos of the agents in the beginning
-    #friend_prob = 0.05
     Environment = GenerateFriendshipGraph(AgentList,friend_prob)
 
+    print('Information about the network:')
+    average_friends(Environment)
     Graph_test(AgentList, Environment)
-
-    if(draw):
-        PlotGraph(Environment) # Plots the initial graph
-
-    #print(nx.eigenvector_centrality(Environment, max_iter=100, tol=1e-06, nstart=None, weight='weight'))
     print("The average clustering coefficient of the network is: ",round(nx.average_clustering(Environment), 3))
-
-    #PrintAgentsInfo() # Prints the infos of the agents in the final state
-
+    print()
 
     """
     ****************** Simulation ***********************
     """
-    from copy import deepcopy
-
-
-    #TimeSteps = 50
+    import copy
 
     ExportGraph(Environment, "start")  # Saves the initial graph
 
     #Copy for analysis of change
     AgentList0 = copy.deepcopy(AgentList)
-    Environment0 = copy.deepcopy(Environment)#.copy()
+    Environment0 = copy.deepcopy(Environment)
 
     # Simulation
     results, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non)
     
-    print("The percentage of smokers changed from", round(numbers[0][1]/3,1) , "% to","%.1f" % round(numbers[-1][1]/3,1), '%')
+    print("The percentage of smokers changed from", round(numbers[0][1]/numAgents * 100, 1) , "% to","%.1f" % round(numbers[-1][1]/numAgents * 100, 1), '%')
     
     ExportGraph(Environment, "end") # Saves the final graph
 
-    #Analyse the result
-    if analyse_inf: 
+    #Analyze the result
+    if analyze_inf:        
+        analyze_influence(AgentList,Environment, bin_number = 20)
         
-        average_friends(Environment)
-        analyse_influence(AgentList,Environment, bin_number = 14)
     
-    #Further analyse the result
-    if analyse_quitting_inf: 
-        analyse_influence_quitting(AgentList0, Environment0, AgentList, Environment)
+    #Further analyze the result
+    if analyze_quitting_inf: 
+        analyze_influence_quitting(AgentList0, Environment0, AgentList, Environment)
 
     """
     ******************* Plot Simulation ***************************
     """
 
     import matplotlib.pyplot as plt
-    import matplotlib.animation
-    plt.rcParams["animation.html"] = "jshtml"
     import numpy as np
-
-    if(draw):
-
-        # Build plot
-        fig, ax = plt.subplots(figsize=(10,7))
-        resultsCopy= deepcopy(results)
-
-
-        def animate(j):
-            ax.clear()
-            PlotGraph(Environment,color_map=resultsCopy[j],ax=ax)
-
-
-        ani = matplotlib.animation.FuncAnimation(fig, animate, frames=len(results))
-        ani.save('mymovie.html')
 
     if(plot):
         # Total
@@ -877,16 +817,13 @@ def run_simulation(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 40,
         plt.grid()
         plt.show()
 
-        #PrintAgentsInfo()
-
-
 
 """
 ****************** Experiment 1 ***********************
 """
 import time
 
-def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, min_non_impact = 0.01, max_non_impact = 0.5):
+def run_experiment1(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, min_non_impact = 0.01, max_non_impact = 0.5):
     """
     Experiment shows the final percentage of smokers in the population in dependence 
     of the impact parameters impact_smoke and impact_non. This parameters stand 
@@ -895,19 +832,18 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     
     
     """
-    #numAgents = 150
-    #friend_prob = 0.05
-    #TimeSteps = 30
+    
+    print('**********************************************************************************')
+    print('RUNNING: Experiment 1')
+    print('**********************************************************************************')
+    
+    #Gridlength: Number of evaluation points for each "impact_smoke" and "impact_non_smoke"
 
-
-    #Anzahl Auswertungspunkte in eine Richtung
-    #Gridlength = 10
-
-    # Simulation von (Gridlength)^2 Werten von impact_smoke x impact_non
+    #Simulation of (Gridlength)^2 values of impact_smoke x impact_non
     impact_smoke_range = np.linspace(min_smoke_impact, max_smoke_impact, Gridlength)
     impact_non_range = np.linspace(min_non_impact, max_non_impact, Gridlength)
 
-    #Quotient Raucher-Agents für alle Tubel i,j
+    #Share of smokers in total population for all tuples (i,j)
     exp_result = np.zeros((Gridlength,Gridlength))
     exp_result_m = np.zeros((Gridlength,Gridlength))
     exp_result_w = np.zeros((Gridlength,Gridlength))
@@ -916,19 +852,19 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     t0 = time.perf_counter()
 
     #Original population
-    AgentList_0 = InitializeAgentPolulation(numAgents)
+    AgentList_0 = InitializeAgentPopulation(numAgents)
     Environment_0 = GenerateFriendshipGraph(AgentList_0,friend_prob)
 
 
     for i in range(Gridlength):
         for j in range(Gridlength):
-            # Initialize Poplulation
+            #Initialize Poplulation
             AgentList1 = copy.deepcopy(AgentList_0)
             Environment1 = Environment_0.copy()
             #Simulate
             a = impact_smoke_range[i] ; b = impact_non_range[j]
             _, numbers_exp1, numbers_m_exp1, numbers_w_exp1, number_of_males = simulate(AgentList1,Environment1,TimeSteps, a, b)
-            #Quotient Raucher / Agents im Schlusszustand
+            #Share of Smokers in total population in final state
             exp_result[i,j] = numbers_exp1[-1,1]/numAgents
             exp_result_w[i,j] = numbers_w_exp1[-1,1]/(numAgents - number_of_males)
             exp_result_m[i,j] = numbers_m_exp1[-1,1]/number_of_males
@@ -951,9 +887,9 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result, levels)
     plt.colorbar(contour_filled)
-    plt.title('Final percentage of smokers in population', fontsize = 'xx-large')
-    plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
-    plt.ylabel('Impact smoker []', fontsize = 'xx-large')
+    plt.title('Final share of smokers in population', fontsize = 'xx-large')
+    plt.xlabel('Impact non smoker', fontsize = 'xx-large')
+    plt.ylabel('Impact smoker', fontsize = 'xx-large')
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
     #plt.grid()
@@ -967,9 +903,9 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result_w, levels)
     plt.colorbar(contour_filled)
-    plt.title('Final percentage of woman smoking', fontsize = 'xx-large')
-    plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
-    plt.ylabel('Impact smoker []', fontsize = 'xx-large')
+    plt.title('Final share of woman smoking', fontsize = 'xx-large')
+    plt.xlabel('Impact non smoker', fontsize = 'xx-large')
+    plt.ylabel('Impact smoker', fontsize = 'xx-large')
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
     #plt.grid()
@@ -984,9 +920,9 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
     plt.clabel(contour, colors = 'k', fmt = '%2.1f', fontsize=18)
     contour_filled = plt.contourf(impact_non_range, impact_smoke_range, exp_result_m, levels)
     plt.colorbar(contour_filled)
-    plt.title('Final percentage of men smoking', fontsize = 'xx-large')
-    plt.xlabel('Impact non smoker []', fontsize = 'xx-large')
-    plt.ylabel('Impact smoker []', fontsize = 'xx-large')
+    plt.title('Final share of men smoking', fontsize = 'xx-large')
+    plt.xlabel('Impact non smoker', fontsize = 'xx-large')
+    plt.ylabel('Impact smoker', fontsize = 'xx-large')
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
     #plt.grid()
@@ -1000,35 +936,30 @@ def run_experiment1(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30
 ****************** Experiment 2 - Analysis of time propagation ***********************
 """
 
-def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, impact_non = 0.1, min_TimeStep = 2, Stepsize = 2):
+def run_experiment2(numAgents = 300, friend_prob = [0.005, 0.005], Gridlength = 12, min_smoke_impact = 0.01, max_smoke_impact = 0.6, impact_non = 0.1, min_TimeStep = 2, Stepsize = 2):
+    print('**********************************************************************************')
+    print('RUNNING: Experiment 2')
+    print('**********************************************************************************')
 
+    #Gridlength: Number of evaluation points for each "impact_smoke" and "impact_non_smoke"
 
-    #numAgents = 150
-    #TimeSteps = 30
-    #impact_non = 0.1
-    #friend_prop = 0.05
-
-
-    #Anzahl Auswertungspunkte in eine Richtung
-    #Gridlength = 10
-
-    # Simulation von (Gridlength)^2 Werten von impact_smoke x friendprop
+    #Simulation of (Gridlength)^2 values of impact_smoke x impact_non
     impact_smoke_range = np.linspace(min_smoke_impact, max_smoke_impact, Gridlength)
     Timestep_range = np.linspace(2, 2+(Gridlength - 1)*Stepsize, Gridlength, dtype = int)
 
-    #Quotient Raucher-Agents für alle Tubel i,j
+    #Share of smokers in total population for all tuples (i,j)
     exp_result = np.zeros((Gridlength,Gridlength))
     exp_result_m = np.zeros((Gridlength,Gridlength))
     exp_result_w = np.zeros((Gridlength,Gridlength))
 
-    #Zeitmessung des Experiments
+    #Timing of the experiment
     t0 = time.perf_counter()
 
     #Original population
-    AgentList_0 = InitializeAgentPolulation(numAgents)
+    AgentList_0 = InitializeAgentPopulation(numAgents)
     Environment_0 = GenerateFriendshipGraph(AgentList_0,friend_prob)
 
-    #Simulation of all tubels
+    #Simulation of all tupels (i,j)
     for i in range(Gridlength):
         for j in range(Gridlength):
             # Initialize Poplulation
@@ -1037,7 +968,7 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
             #Simulate
             a = impact_smoke_range[i] ; b = Timestep_range[j]
             _, numbers_exp1, numbers_m_exp1, numbers_w_exp1, number_of_males = simulate(AgentList1,Environment1, b, a, impact_non)
-            #Quotient Raucher / Agents im Schlusszustand
+            #Share of Smokers in total population in final state
             #Hier sind i, j vertauscht damit beim Plot die Achsen sinnvoll sind.
             exp_result[i,j] = numbers_exp1[-1,1]/numAgents
             exp_result_w[i,j] = numbers_w_exp1[-1,1]/(numAgents-number_of_males)
@@ -1060,7 +991,7 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
     contour_filled = plt.contourf(Timestep_range, impact_smoke_range, exp_result, levels)
     plt.colorbar(contour_filled)
     plt.title('Time propagation against impact of smokers', fontsize = 'xx-large')
-    plt.xlabel('Time step []', fontsize = 'xx-large')
+    plt.xlabel('Time step', fontsize = 'xx-large')
     plt.ylabel('Impact smoker', fontsize = 'xx-large')
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
@@ -1074,18 +1005,22 @@ def run_experiment2(numAgents = 150, friend_prob = [0.05, 0.005], Gridlength = 1
 ****************** Experiment 3 - Determinism test ***********************
 """
 
-def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.3, impact_non = 0.1 , SampleSize = 500, Bins1 = 6, Bins2 = 10):
+def Determinism_test(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1 , SampleSize = 500, Bins1 = 6, Bins2 = 10):
     """
     Function tests how deterministic the model is and answers the following questions:
 
     a) For a given initial population, how big is the standard deviation of the resulting final percentage of smokers?
     b) For random initial populations, how big is the standard deviation of the resulting final percentage of smokers?
     """
+    
+    print('**********************************************************************************')
+    print('RUNNING: Determinism test')
+    print('**********************************************************************************')
 
     #Answer to question a) For a given initial population, how big is the standard deviation of the resulting final percentage of smokers?
 
     #Original population
-    AgentList0 = InitializeAgentPolulation(numAgents)
+    AgentList0 = InitializeAgentPopulation(numAgents)
     Environment0 = GenerateFriendshipGraph(AgentList0,friend_prob)
     
     #Percentage of smokers in population after TimeSteps
@@ -1100,24 +1035,23 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
         #numbers : number of smoker
         _, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non, set_seed = False)
 
-        result1[i] = numbers[-1,1] / numAgents
-        result1_w[i] = numbers_w[-1,1] / (numAgents - number_of_males)
-        result1_m[i] = numbers_m[-1,1] / number_of_males
-
+        result1[i] = numbers[-1,1] / numAgents * 100
+        result1_w[i] = numbers_w[-1,1] / (numAgents - number_of_males) * 100
+        result1_m[i] = numbers_m[-1,1] / number_of_males * 100
 
     plt.figure(figsize = (12,8))
-    plt.hist(result1, Bins1, normed = True, facecolor='grey')
+    plt.hist(result1, Bins1, normed = False, facecolor='grey')
     plt.title('Histogram for given initial population', fontsize = 24)
-    plt.xlabel('Final percentage of smokers', fontsize = 24)
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
+    plt.xlabel('Final percentage % of smokers', fontsize = 24)
+    plt.xticks(fontsize=22)
+    plt.yticks(fontsize=22)
     plt.savefig('Stability_Histogram1.PNG')
     plt.show()
     
     std_deviation1 = np.std(result1)
 
     print('For a given initial population, the standard deviation of the final percentage of smoker is: ',round(std_deviation1 , 4))
-    print('The mean result is: ', round(np.mean(result1) * 100, 1))
+    print('The mean result is: ', round(np.mean(result1), 1))
 
     #Answer to question b) For random initial populations, how big is the standard deviation of the resulting final percentage of smokers?
 
@@ -1134,17 +1068,17 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
         #numbers : number of smoker
         _, numbers, numbers_m, numbers_w, number_of_males = simulate(AgentList,Environment,TimeSteps, impact_smoke, impact_non, set_seed = False)
 
-        result2[i] = numbers[-1,1] / numAgents
-        result2_w[i] = numbers_w[-1,1] / (numAgents - number_of_males)
-        result2_m[i] = numbers_m[-1,1] / number_of_males
+        result2[i] = numbers[-1,1] / numAgents * 100
+        result2_w[i] = numbers_w[-1,1] / (numAgents - number_of_males) * 100
+        result2_m[i] = numbers_m[-1,1] / number_of_males * 100
 
 
     plt.figure(figsize = (12,8))
-    plt.hist(result2, Bins2, normed = True, facecolor='grey')
+    plt.hist(result2, Bins2, normed = False, facecolor='grey')
     plt.title('Histogram for random population', fontsize = 24)
-    plt.xlabel('Final percentage of smokers', fontsize = 24)
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
+    plt.xlabel('Final percentage % of smokers', fontsize = 24)
+    plt.xticks(fontsize=22)
+    plt.yticks(fontsize=22)
     plt.savefig('Stability_Histogram2.PNG')
     plt.show()
 
@@ -1152,24 +1086,23 @@ def Determinism_test(numAgents = 150, friend_prob = [0.05, 0.005], TimeSteps = 3
 
     print('For random initial populations, the standard deviation of the final percentage of smoker is: ',round(std_deviation2 , 4))
 
-    print('The mean result is: ', round(np.mean(result2) * 100, 1))
-
+    print('The mean result is: ', round(np.mean(result2), 1))
 
   
- 
 
 """
 ******************* Main ***************************
 """
 
-#Run Simulation 
-run_simulation(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.21, impact_non = 0.1, plot = True, draw = False, analyse_inf = False, analyse_quitting_inf = False)
+#Uncomment to run the desired simulation.
 
-#run_experiment1(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.03, max_smoke_impact = 0.07, min_non_impact = 0.005, max_non_impact = 0.02)
+#run_simulation(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, impact_smoke = 0.18, impact_non = 0.1, plot = True, analyze_inf = True, analyze_quitting_inf = False)
 
-#run_experiment2(numAgents = 300, friend_prob = [0.01, 0.0005], Gridlength = 8, min_smoke_impact = 0.1, max_smoke_impact = 0.3, impact_non = 0.1, min_TimeStep = 0, Stepsize = 4)
+#run_experiment1(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, Gridlength = 8, min_smoke_impact = 0.05, max_smoke_impact = 0.5, min_non_impact = 0.05, max_non_impact = 0.25)
 
-#Determinism_test(numAgents = 300, friend_prob = [0.05, 0.005], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1, SampleSize = 50, Bins1 = 4, Bins2 = 8)
+#run_experiment2(numAgents = 300, friend_prob = [0.005, 0.005], Gridlength = 8, min_smoke_impact = 0.05, max_smoke_impact = 0.5, impact_non = 0.1, min_TimeStep = 0, Stepsize = 4)
+
+Determinism_test(numAgents = 300, friend_prob = [0.005, 0.005], TimeSteps = 30, impact_smoke = 0.2, impact_non = 0.1, SampleSize = 50, Bins1 = 40, Bins2 = 50)
 
 
 
