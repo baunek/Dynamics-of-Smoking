@@ -52,8 +52,11 @@ For our project we want to use an agent-based model where the agents are connect
 
 # Reproducibility
 
-The folder code contains the pdf document "Reproducibility" which states instructions to do both the light test and the full test of reproducibility of our project.
-In order to be able reproduce our results one needs to have Python installed. To run the test, the files "SmokingChanges.py", "edgesdata.mat", "300nodes.mat", "500nodes.mat" and "1000nodes.mat" need to be downloaded from the code folder and stored together in one folder. Then follow the step-by-step instructions in the pdf document, which is mentioned above. (In principle you just have to run the file "SmokingChanges.py" on your computer using the command "python3 SmokingChanges.py")
-You then should be able to reproduce the main results of our project that are also shown in the media folder. As our results depend on random variables, some results will look different for each run.
-(step by step instructions to reproduce your results. *Keep in mind that people reading this should accomplish to reproduce your work within 10 minutes. It needs to be self-contained and easy to use*. e.g. git clone URL_PROY; cd URL_PROY; python3 main.py --light_test (#--light test runs in less than 5minutes with up to date hardware)) 
+In order to reproduce some of our results, follow the instructions below (you need to have python3 installed on your computer):
+If using git, use the commands:
+  git clone https://github.com/baunek/Dynamics-of-Smoking.git
+  cd code
+  python3 SmokingChanges.py
+If not using git, download all files from the code folder and store them in one folder on your computer ("SmokingChanges.py", "edgesdata.mat", "300nodes.mat", "500nodes.mat" and "1000nodes.mat" are all needed for the light test). Then open your console and direct yourself to the folder in which the files are stored. Then use the command "pyhton3 SmokingChanges.py" to run the file.
 
+Now you then should be able to reproduce the main results of our project that are also shown in the media folder. As our results depend on random variables, some results will look different for each run.
