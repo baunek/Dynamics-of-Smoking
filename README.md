@@ -41,9 +41,9 @@ Our model should show similar results to the Framingham Heart Study. Here, the n
 
 [5] C. Seshadhri, Tamara G. Kolda, and Ali Pinar. “Community structure and scale-free collections of Erdo ̋s-R ́enyi graphs”. In: Phys. Rev. E 85 (5 May 2012), p. 056109. doi: 10.1103/PhysRevE.85.056109. url: https://link.aps.org/doi/10.1103/ PhysRevE.85.056109.
 
-[6] Bundesamt fu ̈r Statistik. Tabakkonsum in der Schweiz. Oct. 7, 2018. url: https: / / www . bfs . admin . ch / bfs / de / home / statistiken / gesundheit / determinanten / tabak.html.
+[6] Bundesamt fu ̈r Statistik. Tabakkonsum in der Schweiz. Oct. 7, 2018. url: https://www.bfs.admin.ch/bfs/de/home/statistiken/gesundheit/determinanten/tabak.html.
 
-[7] Switzerland Age structure. Nov. 23, 2018. url: https : / / www . indexmundi . com / switzerland/age_structure.html.
+[7] Switzerland Age structure. Nov. 23, 2018. url: https://www.indexmundi.com/switzerland/age_structure.html.
 
 ## Research Methods
 
