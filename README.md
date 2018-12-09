@@ -1,9 +1,9 @@
 # Modeling and Simulation of Social Systems Fall 2018 – Research Plan
 
-> * Group Name: Smoked and Confused
-> * Group participants names: Konstantin Baune, Georg Engin-Deniz, Max Glantschnig, Roman Wixinger
-> * Project Title: Dynamics of Smoking
-> * Programming language: Python
+* Group Name: Smoked and Confused
+* Group participants names: Konstantin Baune, Georg Engin-Deniz, Max Glantschnig, Roman Wixinger
+* Project Title: Dynamics of Smoking
+* Programming language: Python
 
 
 ## General Introduction
@@ -35,7 +35,7 @@ Our model should show similar results to the Framingham Heart Study. Here, the n
 
 [2] Tamara G. Kolda et al. “A Scalable Generative Graph Model with Community Struc- ture”. In: SIAM Journal on Scientific Computing 36.5 (Jan. 2014), pp. C424–C452. doi: 10.1137/130914218.
 
-[3] Mark Newman. Networks: An Introduction. Oxford University Press, 2010. isbn: 978- 0-19-920665-0.
+[3] Mark Newman. Networks: An Introduction. Oxford University Press, 2010. isbn: 978-0-19-920665-0.
 
 [4] Tamara G. Kolda; Ali Pinar; others. FEASTPACK v1.2. Sandia National Laboratorie. Nov. 27, 2018. url: https://www.sandia.gov/~tgkolda/feastpack/.
 
