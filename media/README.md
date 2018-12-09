@@ -1,3 +1,3 @@
-# Graphs, Videos and Images Folder 
+# Graphs and Images Folder 
 
-If you produced interesting graphs, videos and images during your simulations please add them here. Remember to compress them before. 
+This folder includes all graphs and images that we produced and that are used in our report.
